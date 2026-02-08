@@ -9,7 +9,7 @@ import './globals.css'
 const _inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'JerseyStore - Camisetas Deportivas',
+  title: 'GoalWear - Camisetas Deportivas',
   description: 'Tu tienda de camisetas deportivas. Entrega inmediata, pedidos personalizados y accesorios.',
 }
 

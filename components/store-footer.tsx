@@ -7,9 +7,9 @@ export function StoreFooter() {
         <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <span className="text-xs font-bold text-primary-foreground">JS</span>
+              <span className="text-xs font-bold text-primary-foreground">GW</span>
             </div>
-            <span className="text-sm font-semibold text-foreground">JerseyStore</span>
+            <span className="text-sm font-semibold text-foreground">GoalWear</span>
           </div>
           <nav className="flex gap-6">
             <Link
@@ -32,7 +32,7 @@ export function StoreFooter() {
             </Link>
           </nav>
           <p className="text-xs text-muted-foreground">
-            JerseyStore {new Date().getFullYear()}
+            GoalWear {new Date().getFullYear()}
           </p>
         </div>
       </div>

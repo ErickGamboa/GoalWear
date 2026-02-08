@@ -22,9 +22,9 @@ export function StoreHeader() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">JS</span>
+            <span className="text-sm font-bold text-primary-foreground">GW</span>
           </div>
-          <span className="text-lg font-bold text-foreground">JerseyStore</span>
+          <span className="text-lg font-bold text-foreground">GoalWear</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

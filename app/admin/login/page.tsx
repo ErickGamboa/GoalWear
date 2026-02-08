@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">JS</span>
+            <span className="text-sm font-bold text-primary-foreground">GW</span>
           </div>
           <CardTitle className="text-xl text-foreground">
             Panel de Administracion

@@ -4,7 +4,7 @@ import Link from "next/link"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Pedido Confirmado | JerseyStore",
+  title: "Pedido Confirmado | GoalWear",
 }
 
 export default function SuccessPage() {

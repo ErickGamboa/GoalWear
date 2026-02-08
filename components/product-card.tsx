@@ -20,7 +20,7 @@ export function ProductCard({ product }: { product: Product }) {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-              <span className="text-4xl font-bold opacity-20">JS</span>
+              <span className="text-4xl font-bold opacity-20">GW</span>
             </div>
           )}
           {!inStock && (

@@ -83,7 +83,7 @@ export function ProductDetailClient({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <span className="text-8xl font-bold opacity-10">JS</span>
+            <span className="text-8xl font-bold opacity-10">GW</span>
           </div>
         )}
       </div>
