@@ -13,6 +13,7 @@ import { useCart } from "@/lib/cart-context"
 import { toast } from "sonner"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { formatCurrency } from "@/lib/utils"
 
 export function CheckoutForm() {
   const { items, totalPrice, clearCart } = useCart()
@@ -111,7 +112,7 @@ export function CheckoutForm() {
                 </p>
               </div>
               <span className="font-medium text-foreground">
-                ${(item.unitPrice * item.quantity).toFixed(2)}
+                {formatCurrency(item.unitPrice * item.quantity)}
               </span>
             </div>
           ))}
@@ -119,7 +120,7 @@ export function CheckoutForm() {
         <Separator className="my-3" />
         <div className="flex items-center justify-between text-base font-bold text-foreground">
           <span>Total</span>
-          <span>${totalPrice.toFixed(2)}</span>
+          <span>{formatCurrency(totalPrice)}</span>
         </div>
       </div>
 

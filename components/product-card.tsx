@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Product } from "@/lib/types"
 import { CATEGORY_SLUGS } from "@/lib/types"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 
 export function ProductCard({ product }: { product: Product }) {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -95,7 +95,7 @@ export function ProductCard({ product }: { product: Product }) {
           </h3>
           <div className="mt-1.5 flex items-center justify-between">
             <span className="text-sm font-bold text-foreground">
-              ${Number(product.price).toFixed(2)}
+              {formatCurrency(Number(product.price))}
             </span>
             <span className="text-[10px] font-medium text-muted-foreground uppercase">{product.code}</span>
           </div>

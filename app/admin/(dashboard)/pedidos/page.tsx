@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import type { Order } from "@/lib/types"
+import { formatCurrency } from "@/lib/utils"
 
 export default async function OrdersPage() {
   const supabase = await createClient()
@@ -66,7 +67,7 @@ export default async function OrdersPage() {
                     {order.customer_phone || "-"}
                   </TableCell>
                   <TableCell className="text-right font-bold text-foreground">
-                    ${Number(order.total).toFixed(2)}
+                    {formatCurrency(Number(order.total))}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm">

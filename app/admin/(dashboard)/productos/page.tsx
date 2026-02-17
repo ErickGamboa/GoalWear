@@ -14,6 +14,7 @@ import { Plus } from "lucide-react"
 import { CATEGORY_LABELS } from "@/lib/types"
 import type { Product } from "@/lib/types"
 import { DeleteProductButton } from "./delete-product-button"
+import { formatCurrency } from "@/lib/utils"
 
 export default async function ProductsPage() {
   const supabase = await createClient()
@@ -76,7 +77,7 @@ export default async function ProductsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    ${Number(product.price).toFixed(2)}
+                    {formatCurrency(Number(product.price))}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

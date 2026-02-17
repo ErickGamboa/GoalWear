@@ -7,9 +7,10 @@ import type { Metadata } from "next"
 
 type Props = {
   params: Promise<{ category: string }>
+  searchParams: Promise<{ q?: string }>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
   const { category: slug } = await params
   const category = SLUG_TO_CATEGORY[slug]
   if (!category) return {}
@@ -20,21 +21,48 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function CatalogPage({ params }: Props) {
+export default async function CatalogPage({ params, searchParams }: Props) {
   const { category: slug } = await params
+  const { q: query } = await searchParams
   const category = SLUG_TO_CATEGORY[slug]
   if (!category) notFound()
 
   const label = CATEGORY_LABELS[category]
   const supabase = await createClient()
 
-  const { data: products } = await supabase
+  let dbQuery = supabase
     .from("products")
-    .select("*")
+    .select(`
+      *,
+      product_sizes (size)
+    `)
     .eq("category", category)
     .order("created_at", { ascending: false })
 
-  const productList = (products ?? []) as Product[]
+  if (query) {
+    dbQuery = dbQuery.or(`name.ilike.%${query}%,team.ilike.%${query}%,code.ilike.%${query}%`)
+  }
+
+  const { data: products } = await dbQuery
+
+  let productList = (products ?? []) as any[]
+
+  // Filter by size if query exists and no name/team/code match was found for those sizes
+  if (query) {
+    const queryLower = query.toLowerCase()
+    // Products already found by or() filter
+    // We add products where at least one size matches the query
+    // This is already done for name/team/code, but if someone searches just "XL",
+    // the .or() above won't catch it unless the name has "XL".
+    // So we refine the list to include size matches if they aren't already there.
+    // However, since we selected product_sizes, we can do it in JS.
+    productList = productList.filter(p => 
+      p.name.toLowerCase().includes(queryLower) ||
+      (p.team && p.team.toLowerCase().includes(queryLower)) ||
+      p.code.toLowerCase().includes(queryLower) ||
+      p.product_sizes?.some((s: any) => s.size.toLowerCase().includes(queryLower))
+    )
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">

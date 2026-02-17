@@ -1,0 +1,62 @@
+"use client"
+
+import * as React from "react"
+import { useState, useEffect } from "react"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
+import { Search, X } from "lucide-react"
+import { Input } from "@/components/ui/input"
+
+export function ProductSearch() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  
+  const [query, setQuery] = useState(searchParams.get("q") || "")
+
+  // Update local state when URL params change (e.g. on navigation or clear)
+  useEffect(() => {
+    setQuery(searchParams.get("q") || "")
+  }, [searchParams])
+
+  const handleSearch = (value: string) => {
+    setQuery(value)
+    
+    const params = new URLSearchParams(searchParams.toString())
+    if (value) {
+      params.set("q", value)
+    } else {
+      params.delete("q")
+    }
+    
+    // Replace current URL with new search param
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const clearSearch = () => {
+    setQuery("")
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("q")
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  return (
+    <div className="relative w-full max-w-[200px] md:max-w-[300px]">
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        type="text"
+        placeholder="Buscar productos..."
+        value={query}
+        onChange={(e) => handleSearch(e.target.value)}
+        className="h-9 w-full bg-muted/50 pl-9 pr-8 text-xs focus-visible:ring-1"
+      />
+      {query && (
+        <button
+          onClick={clearSearch}
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-0.5 hover:bg-muted"
+        >
+          <X className="h-3 w-3 text-muted-foreground" />
+        </button>
+      )}
+    </div>
+  )
+}

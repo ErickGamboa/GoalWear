@@ -15,8 +15,8 @@ export function PatchForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState("")
-  const [price, setPrice] = useState("")
   const [imageUrl, setImageUrl] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -24,18 +24,40 @@ export function PatchForm() {
 
     try {
       const supabase = createClient()
+      
+      let finalImageUrl = imageUrl
+      if (imageFile) {
+        const ext = imageFile.name.split(".").pop()
+        const fileName = `patch-${Date.now()}.${ext}`
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("product-images")
+          .upload(fileName, imageFile)
+
+        if (uploadError) throw uploadError
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("product-images")
+          .getPublicUrl(uploadData.path)
+        finalImageUrl = publicUrl
+      }
+
       const { error } = await supabase.from("patches").insert({
         name,
-        price: parseFloat(price),
-        image_url: imageUrl || null,
+        price: 0,
+        image_url: finalImageUrl || null,
       })
 
-      if (error) throw error
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error("Ya existe un parche con ese nombre")
+        }
+        throw error
+      }
 
       toast.success("Parche creado")
       setName("")
-      setPrice("")
       setImageUrl("")
+      setImageFile(null)
       router.refresh()
     } catch (err) {
       toast.error(
@@ -60,21 +82,17 @@ export function PatchForm() {
         />
       </div>
       <div>
-        <Label htmlFor="patch-price">Precio *</Label>
+        <Label htmlFor="patch-image-file">Subir imagen local</Label>
         <Input
-          id="patch-price"
-          type="number"
-          step="0.01"
-          min="0"
-          required
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="5.00"
+          id="patch-image-file"
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
           className="mt-1"
         />
       </div>
       <div>
-        <Label htmlFor="patch-image">URL de imagen</Label>
+        <Label htmlFor="patch-image">O URL de imagen</Label>
         <Input
           id="patch-image"
           value={imageUrl}

@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import { useCart } from "@/lib/cart-context"
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
 import Link from "next/link"
+import { formatCurrency } from "@/lib/utils"
 
 export function CartSheet() {
   const { items, removeItem, updateQuantity, totalPrice, isOpen, setIsOpen } =
@@ -84,7 +85,7 @@ export function CartSheet() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-foreground">
-                            ${(item.unitPrice * item.quantity).toFixed(2)}
+                            {formatCurrency(item.unitPrice * item.quantity)}
                           </span>
                           <Button
                             variant="ghost"
@@ -107,7 +108,7 @@ export function CartSheet() {
               <div className="flex items-center justify-between pb-4">
                 <span className="text-base font-semibold text-foreground">Total</span>
                 <span className="text-lg font-bold text-foreground">
-                  ${totalPrice.toFixed(2)}
+                  {formatCurrency(totalPrice)}
                 </span>
               </div>
               <Button asChild className="w-full" size="lg" onClick={() => setIsOpen(false)}>

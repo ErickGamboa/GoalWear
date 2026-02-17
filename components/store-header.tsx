@@ -5,6 +5,7 @@ import { ShoppingCart, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
 import { useState } from "react"
+import { ProductSearch } from "./product-search"
 
 const NAV_LINKS = [
   { href: "/", label: "Inicio" },
@@ -40,6 +41,7 @@ export function StoreHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ProductSearch />
           <Button
             variant="outline"
             size="icon"

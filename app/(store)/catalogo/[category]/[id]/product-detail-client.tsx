@@ -10,6 +10,7 @@ import { useCart } from "@/lib/cart-context"
 import type { ProductWithSizes, Patch } from "@/lib/types"
 import { ShoppingCart } from "lucide-react"
 import { toast } from "sonner"
+import { formatCurrency, cn } from "@/lib/utils"
 
 export function ProductDetailClient({
   product,
@@ -35,7 +36,30 @@ export function ProductDetailClient({
   ].filter(Boolean) as string[]
 
   const isPreorder = product.category === "preorder"
+  const isAccessory = product.category === "accessory"
   
+  const JERSEY_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
+  
+  // Logic for display sizes
+  const displaySizes = isPreorder 
+    ? JERSEY_SIZES.map(size => ({ 
+        id: size, 
+        size: size, 
+        stock: 999 // Virtual stock for preorder
+      }))
+    : product.product_sizes || []
+
+  const selectedSizeData = displaySizes.find((s) => s.size === selectedSize)
+  const isOutOfStock =
+    !isPreorder && selectedSizeData ? selectedSizeData.stock < 1 : false
+
+  const canAdd =
+    (isAccessory || selectedSize) && !isOutOfStock && product.has_stock
+
+  const patchTotal = 0 // Patches are free
+
+  const unitPrice = Number(product.price)
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return
     
@@ -54,22 +78,6 @@ export function ProductDetailClient({
   const handleMouseLeave = () => {
     setZoomStyle({ display: 'none' })
   }
-  const isAccessory = product.category === "accessory"
-  const sizes = product.product_sizes || []
-
-  const selectedSizeData = sizes.find((s) => s.size === selectedSize)
-  const isOutOfStock =
-    !isPreorder && selectedSizeData ? selectedSizeData.stock < 1 : false
-
-  const canAdd =
-    (isAccessory || selectedSize) && !isOutOfStock && product.has_stock
-
-  const patchTotal = selectedPatches.reduce((sum, pName) => {
-    const patch = patches.find((p) => p.name === pName)
-    return sum + (patch ? Number(patch.price) : 0)
-  }, 0)
-
-  const unitPrice = Number(product.price) + patchTotal
 
   function handleAddToCart() {
     if (!canAdd) return
@@ -92,11 +100,17 @@ export function ProductDetailClient({
   }
 
   function togglePatch(patchName: string) {
-    setSelectedPatches((prev) =>
-      prev.includes(patchName)
-        ? prev.filter((p) => p !== patchName)
-        : [...prev, patchName]
-    )
+    setSelectedPatches((prev) => {
+      const isSelected = prev.includes(patchName)
+      if (isSelected) {
+        return prev.filter((p) => p !== patchName)
+      }
+      if (prev.length >= 2) {
+        toast.error("Máximo 2 parches por camiseta")
+        return prev
+      }
+      return [...prev, patchName]
+    })
   }
 
   return (
@@ -167,12 +181,11 @@ export function ProductDetailClient({
           {product.name}
         </h1>
         <p className="mt-3 text-3xl font-bold text-primary">
-          ${unitPrice.toFixed(2)}
+          {formatCurrency(unitPrice)}
         </p>
         {patchTotal > 0 && (
           <p className="text-sm text-muted-foreground">
-            Precio base: ${Number(product.price).toFixed(2)} + Parches: $
-            {patchTotal.toFixed(2)}
+            Precio base: {formatCurrency(Number(product.price))} + Parches: {formatCurrency(patchTotal)}
           </p>
         )}
 
@@ -183,11 +196,11 @@ export function ProductDetailClient({
         )}
 
         {/* Sizes */}
-        {sizes.length > 0 && (
+        {displaySizes.length > 0 && (
           <div className="mt-6">
             <Label className="text-sm font-semibold text-foreground">Talla</Label>
             <div className="mt-2 flex flex-wrap gap-2">
-              {sizes.map((s) => {
+              {displaySizes.map((s) => {
                 const outOfStock = !isPreorder && s.stock < 1
                 return (
                   <button
@@ -251,28 +264,49 @@ export function ProductDetailClient({
 
             {patches.length > 0 && (
               <div>
-                <Label className="text-xs text-muted-foreground">Parches</Label>
-                <div className="mt-2 space-y-2">
-                  {patches.map((patch) => (
-                    <label
-                      key={patch.id}
-                      className="flex cursor-pointer items-center gap-3 rounded-md border border-border p-2.5 transition-colors hover:bg-accent"
-                    >
-                      <Checkbox
-                        checked={selectedPatches.includes(patch.name)}
-                        onCheckedChange={() => togglePatch(patch.name)}
-                      />
-                      <div className="flex flex-1 items-center justify-between">
-                        <span className="text-sm text-foreground">
-                          {patch.name}
-                        </span>
-                        <span className="text-sm font-medium text-muted-foreground">
-                          +${Number(patch.price).toFixed(2)}
-                        </span>
-                      </div>
-                    </label>
-                  ))}
+                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Selecciona tus Parches (Máx. 2)
+                </Label>
+                <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                  {patches.map((patch) => {
+                    const isSelected = selectedPatches.includes(patch.name)
+                    return (
+                      <button
+                        key={patch.id}
+                        type="button"
+                        onClick={() => togglePatch(patch.name)}
+                        className={cn(
+                          "relative aspect-square overflow-hidden rounded-lg border-2 p-1 transition-all",
+                          isSelected 
+                            ? "border-primary bg-primary/5 ring-2 ring-primary/20" 
+                            : "border-border hover:border-muted-foreground/50"
+                        )}
+                      >
+                        {patch.image_url ? (
+                          <img
+                            src={patch.image_url}
+                            alt={patch.name}
+                            className="h-full w-full object-contain"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[10px] text-center font-medium leading-tight">
+                            {patch.name}
+                          </div>
+                        )}
+                        {isSelected && (
+                          <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
+                {selectedPatches.length > 0 && (
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    Seleccionados: <span className="font-medium text-foreground">{selectedPatches.join(", ")}</span>
+                  </p>
+                )}
               </div>
             )}
           </div>

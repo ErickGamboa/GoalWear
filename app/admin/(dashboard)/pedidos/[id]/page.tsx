@@ -8,6 +8,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import type { OrderWithItems } from "@/lib/types"
 import { CATEGORY_LABELS } from "@/lib/types"
+import { formatCurrency } from "@/lib/utils"
 
 type Props = {
   params: Promise<{ id: string }>
@@ -99,7 +100,7 @@ export default async function OrderDetailPage({ params }: Props) {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">
-              ${Number(typedOrder.total).toFixed(2)}
+              {formatCurrency(Number(typedOrder.total))}
             </div>
             <p className="text-sm text-muted-foreground">
               {typedOrder.order_items.length} producto
@@ -145,7 +146,7 @@ export default async function OrderDetailPage({ params }: Props) {
                   )}
                 </div>
                 <span className="text-sm font-bold text-foreground">
-                  ${Number(item.subtotal).toFixed(2)}
+                  {formatCurrency(Number(item.subtotal))}
                 </span>
               </div>
             ))}
