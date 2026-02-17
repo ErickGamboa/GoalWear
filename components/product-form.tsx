@@ -38,7 +38,11 @@ export function ProductForm({ product, mode }: Props) {
   const [category, setCategory] = useState(product?.category ?? "immediate")
   const [hasStock, setHasStock] = useState(product?.has_stock ?? true)
   const [imageUrl, setImageUrl] = useState(product?.image_url ?? "")
+  const [imageUrl2, setImageUrl2] = useState(product?.image_url_2 ?? "")
+  const [imageUrl3, setImageUrl3] = useState(product?.image_url_3 ?? "")
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageFile2, setImageFile2] = useState<File | null>(null)
+  const [imageFile3, setImageFile3] = useState<File | null>(null)
 
   const [sizes, setSizes] = useState<{ size: string; stock: number }[]>(
     product?.product_sizes?.map((s) => ({
@@ -77,14 +81,14 @@ export function ProductForm({ product, mode }: Props) {
     try {
       const supabase = createClient()
 
-      // Upload image if file selected
-      let finalImageUrl = imageUrl
-      if (imageFile) {
-        const ext = imageFile.name.split(".").pop()
-        const fileName = `${Date.now()}.${ext}`
+      // Upload images if files selected
+      const uploadImage = async (file: File | null, currentUrl: string) => {
+        if (!file) return currentUrl
+        const ext = file.name.split(".").pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("product-images")
-          .upload(fileName, imageFile)
+          .upload(fileName, file)
 
         if (uploadError) throw uploadError
 
@@ -93,8 +97,12 @@ export function ProductForm({ product, mode }: Props) {
         } = supabase.storage
           .from("product-images")
           .getPublicUrl(uploadData.path)
-        finalImageUrl = publicUrl
+        return publicUrl
       }
+
+      const finalImageUrl = await uploadImage(imageFile, imageUrl)
+      const finalImageUrl2 = await uploadImage(imageFile2, imageUrl2)
+      const finalImageUrl3 = await uploadImage(imageFile3, imageUrl3)
 
       const productData = {
         name,
@@ -103,6 +111,8 @@ export function ProductForm({ product, mode }: Props) {
         category,
         has_stock: hasStock,
         image_url: finalImageUrl || null,
+        image_url_2: finalImageUrl2 || null,
+        image_url_3: finalImageUrl3 || null,
       }
 
       if (mode === "create") {
@@ -218,7 +228,7 @@ export function ProductForm({ product, mode }: Props) {
             </div>
             <div>
               <Label>Categoria *</Label>
-              <Select value={category} onValueChange={setCategory}>
+              <Select value={category} onValueChange={(val) => setCategory(val as any)}>
                 <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
@@ -244,28 +254,79 @@ export function ProductForm({ product, mode }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-foreground">Imagen</CardTitle>
+          <CardTitle className="text-foreground">Imágenes</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <Label htmlFor="image-file">Subir imagen</Label>
-            <Input
-              id="image-file"
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-              className="mt-1"
-            />
+        <CardContent className="space-y-6">
+          <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
+            <h3 className="text-sm font-medium">Imagen Principal</h3>
+            <div>
+              <Label htmlFor="image-file">Subir imagen</Label>
+              <Input
+                id="image-file"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                className="mt-1 bg-background"
+              />
+            </div>
+            <div>
+              <Label htmlFor="image-url">O pegar URL</Label>
+              <Input
+                id="image-url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://..."
+                className="mt-1 bg-background"
+              />
+            </div>
           </div>
-          <div>
-            <Label htmlFor="image-url">O pegar URL de imagen</Label>
-            <Input
-              id="image-url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-              className="mt-1"
-            />
+
+          <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
+            <h3 className="text-sm font-medium">Imagen 2</h3>
+            <div>
+              <Label htmlFor="image-file-2">Subir imagen</Label>
+              <Input
+                id="image-file-2"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile2(e.target.files?.[0] ?? null)}
+                className="mt-1 bg-background"
+              />
+            </div>
+            <div>
+              <Label htmlFor="image-url-2">O pegar URL</Label>
+              <Input
+                id="image-url-2"
+                value={imageUrl2}
+                onChange={(e) => setImageUrl2(e.target.value)}
+                placeholder="https://..."
+                className="mt-1 bg-background"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
+            <h3 className="text-sm font-medium">Imagen 3</h3>
+            <div>
+              <Label htmlFor="image-file-3">Subir imagen</Label>
+              <Input
+                id="image-file-3"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile3(e.target.files?.[0] ?? null)}
+                className="mt-1 bg-background"
+              />
+            </div>
+            <div>
+              <Label htmlFor="image-url-3">O pegar URL</Label>
+              <Input
+                id="image-url-3"
+                value={imageUrl3}
+                onChange={(e) => setImageUrl3(e.target.value)}
+                placeholder="https://..."
+                className="mt-1 bg-background"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

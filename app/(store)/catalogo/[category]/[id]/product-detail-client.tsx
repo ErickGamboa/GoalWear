@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,8 +24,36 @@ export function ProductDetailClient({
   const [customNumber, setCustomNumber] = useState("")
   const [selectedPatches, setSelectedPatches] = useState<string[]>([])
   const [quantity, setQuantity] = useState(1)
+  const [activeImage, setActiveImage] = useState(product.image_url)
+  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ display: 'none' })
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const images = [
+    product.image_url,
+    product.image_url_2,
+    product.image_url_3,
+  ].filter(Boolean) as string[]
 
   const isPreorder = product.category === "preorder"
+  
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return
+    
+    const { left, top, width, height } = containerRef.current.getBoundingClientRect()
+    const x = ((e.pageX - left - window.scrollX) / width) * 100
+    const y = ((e.pageY - top - window.scrollY) / height) * 100
+    
+    setZoomStyle({
+      display: 'block',
+      backgroundImage: `url(${activeImage})`,
+      backgroundPosition: `${x}% ${y}%`,
+      backgroundSize: '250%', // Zoom level
+    })
+  }
+
+  const handleMouseLeave = () => {
+    setZoomStyle({ display: 'none' })
+  }
   const isAccessory = product.category === "accessory"
   const sizes = product.product_sizes || []
 
@@ -73,17 +101,54 @@ export function ProductDetailClient({
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
-      {/* Product Image */}
-      <div className="aspect-square overflow-hidden rounded-xl bg-muted">
-        {product.image_url ? (
-          <img
-            src={product.image_url || "/placeholder.svg"}
-            alt={product.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <span className="text-8xl font-bold opacity-10">GW</span>
+      {/* Product Images */}
+      <div className="space-y-4">
+        <div 
+          ref={containerRef}
+          className="relative aspect-square overflow-hidden rounded-xl bg-muted border border-border cursor-crosshair"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
+          {activeImage ? (
+            <>
+              <img
+                src={activeImage}
+                alt={product.name}
+                className="h-full w-full object-cover transition-all"
+              />
+              {/* Zoom Overlay (Desktop only) */}
+              <div 
+                className="absolute inset-0 z-10 hidden md:block pointer-events-none"
+                style={zoomStyle}
+              />
+            </>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+              <span className="text-8xl font-bold opacity-10">GW</span>
+            </div>
+          )}
+        </div>
+
+        {images.length > 1 && (
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {images.map((img, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveImage(img)}
+                className={`relative aspect-square w-20 overflow-hidden rounded-lg border-2 transition-all ${
+                  activeImage === img
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-transparent hover:border-border"
+                }`}
+              >
+                <img
+                  src={img}
+                  alt={`${product.name} thumbnail ${i + 1}`}
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ))}
           </div>
         )}
       </div>

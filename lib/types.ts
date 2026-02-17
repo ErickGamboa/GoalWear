@@ -5,6 +5,8 @@ export type Product = {
   team: string | null
   price: number
   image_url: string | null
+  image_url_2: string | null
+  image_url_3: string | null
   category: "immediate" | "preorder" | "accessory"
   has_stock: boolean
   created_at: string
