@@ -9,17 +9,18 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import type { Order } from "@/lib/types"
+import type { OrderWithItems } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
+import { InventoryButton } from "./inventory-button"
 
 export default async function OrdersPage() {
   const supabase = await createClient()
   const { data } = await supabase
     .from("orders")
-    .select("*")
+    .select("*, order_items(*)")
     .order("created_at", { ascending: false })
 
-  const orders = (data ?? []) as Order[]
+  const orders = (data ?? []) as OrderWithItems[]
 
   return (
     <div>
@@ -35,7 +36,7 @@ export default async function OrdersPage() {
                 <TableHead className="whitespace-nowrap">Email</TableHead>
                 <TableHead className="whitespace-nowrap">Telefono</TableHead>
                 <TableHead className="text-right whitespace-nowrap">Total</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Detalles</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -49,34 +50,39 @@ export default async function OrdersPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                orders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">
-                      {new Date(order.created_at).toLocaleDateString("es-MX", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </TableCell>
-                    <TableCell className="font-medium text-foreground whitespace-nowrap">
-                      {order.customer_name}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">
-                      {order.customer_email}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">
-                      {order.customer_phone || "-"}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-foreground whitespace-nowrap">
-                      {formatCurrency(Number(order.total))}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/pedidos/${order.id}`}>Ver</Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                orders.map((order) => {
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {new Date(order.created_at).toLocaleDateString("es-MX", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </TableCell>
+                      <TableCell className="font-medium text-foreground whitespace-nowrap">
+                        {order.customer_name}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {order.customer_email}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {order.customer_phone || "-"}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-foreground whitespace-nowrap">
+                        {formatCurrency(Number(order.total))}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <InventoryButton order={order} />
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/admin/pedidos/${order.id}`}>Ver</Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>

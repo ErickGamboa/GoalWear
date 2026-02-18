@@ -1,10 +1,13 @@
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
-import { SLUG_TO_CATEGORY, CATEGORY_LABELS, CATEGORY_SLUGS } from "@/lib/types"
+import { SLUG_TO_CATEGORY, CATEGORY_LABELS } from "@/lib/types"
 import type { ProductWithSizes, Patch } from "@/lib/types"
 import type { Metadata } from "next"
 import { ProductDetailClient } from "./product-detail-client"
 import Link from "next/link"
+
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 type Props = {
   params: Promise<{ category: string; id: string }>

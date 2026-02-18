@@ -34,7 +34,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     .from("products")
     .select(`
       *,
-      product_sizes (size)
+      product_sizes (size, stock)
     `)
     .eq("category", category)
     .order("created_at", { ascending: false })
@@ -61,6 +61,13 @@ export default async function CatalogPage({ params, searchParams }: Props) {
       (p.team && p.team.toLowerCase().includes(queryLower)) ||
       p.code.toLowerCase().includes(queryLower) ||
       p.product_sizes?.some((s: any) => s.size.toLowerCase().includes(queryLower))
+    )
+  }
+
+  // NEW: Filter out "immediate" products with zero total stock
+  if (category === "immediate") {
+    productList = productList.filter(p => 
+      p.product_sizes?.some((s: any) => s.stock > 0)
     )
   }
 

@@ -1,14 +1,16 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useCart } from "@/lib/cart-context"
+import { createClient } from "@/lib/supabase/client"
 import type { ProductWithSizes, Patch } from "@/lib/types"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { formatCurrency, cn } from "@/lib/utils"
 
@@ -19,7 +21,8 @@ export function ProductDetailClient({
   product: ProductWithSizes
   patches: Patch[]
 }) {
-  const { addItem } = useCart()
+  const router = useRouter()
+  const { addItem, items: cartItems } = useCart()
   const [selectedSize, setSelectedSize] = useState("")
   const [customName, setCustomName] = useState("")
   const [customNumber, setCustomNumber] = useState("")
@@ -27,7 +30,9 @@ export function ProductDetailClient({
   const [quantity, setQuantity] = useState(1)
   const [activeImage, setActiveImage] = useState(product.image_url)
   const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ display: 'none' })
+  const [isValidating, setIsValidating] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const supabase = createClient()
 
   const images = [
     product.image_url,
@@ -45,18 +50,22 @@ export function ProductDetailClient({
     ? JERSEY_SIZES.map(size => ({ 
         id: size, 
         size: size, 
-        stock: 999 // Virtual stock for preorder
+        stock: 999 
       }))
-    : product.product_sizes || []
+    : (product.product_sizes || [])
 
   const selectedSizeData = displaySizes.find((s) => s.size === selectedSize)
+  const availableStock = selectedSizeData?.stock || 0
   const isOutOfStock =
     !isPreorder && selectedSizeData ? selectedSizeData.stock < 1 : false
 
   const canAdd =
-    (isAccessory || selectedSize) && !isOutOfStock && product.has_stock
+    !isValidating &&
+    (isAccessory || (selectedSize && (isPreorder || availableStock >= quantity))) && 
+    !isOutOfStock && 
+    product.has_stock
 
-  const patchTotal = 0 // Patches are free
+  const patchTotal = 0 
 
   const unitPrice = Number(product.price)
 
@@ -71,7 +80,7 @@ export function ProductDetailClient({
       display: 'block',
       backgroundImage: `url(${activeImage})`,
       backgroundPosition: `${x}% ${y}%`,
-      backgroundSize: '250%', // Zoom level
+      backgroundSize: '250%', 
     })
   }
 
@@ -79,8 +88,39 @@ export function ProductDetailClient({
     setZoomStyle({ display: 'none' })
   }
 
-  function handleAddToCart() {
+  async function handleAddToCart() {
     if (!canAdd) return
+
+    // Final Validation against DB before adding
+    if (!isPreorder && !isAccessory) {
+      setIsValidating(true)
+      try {
+        const { data, error } = await supabase
+          .from("product_sizes")
+          .select("stock")
+          .eq("product_id", product.id)
+          .eq("size", selectedSize)
+          .single()
+
+        if (error) throw error
+        
+        const dbStock = data.stock
+        const inCart = cartItems
+          .filter(item => item.productId === product.id && item.size === selectedSize)
+          .reduce((sum, item) => sum + item.quantity, 0)
+
+        if (dbStock < (quantity + inCart)) {
+          toast.error(`Solo quedan ${dbStock} unidades disponibles (tienes ${inCart} en el carrito)`)
+          return
+        }
+      } catch (err) {
+        toast.error("Error al verificar stock")
+        return
+      } finally {
+        setIsValidating(false)
+      }
+    }
+
     addItem({
       id: `${product.id}-${selectedSize}-${customName}-${customNumber}-${selectedPatches.join(",")}`,
       productId: product.id,
@@ -97,6 +137,7 @@ export function ProductDetailClient({
       patches: isPreorder ? selectedPatches : undefined,
     })
     toast.success("Producto agregado al carrito")
+    router.refresh()
   }
 
   function togglePatch(patchName: string) {
@@ -313,36 +354,53 @@ export function ProductDetailClient({
         )}
 
         {/* Quantity + Add to Cart */}
-        <div className="mt-6 flex items-center gap-3">
-          <div className="flex items-center rounded-md border border-border">
-            <button
-              type="button"
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="flex h-10 w-10 items-center justify-center text-foreground transition-colors hover:bg-accent"
-            >
-              -
-            </button>
-            <span className="flex h-10 w-10 items-center justify-center text-sm font-medium text-foreground">
-              {quantity}
-            </span>
-            <button
-              type="button"
-              onClick={() => setQuantity(quantity + 1)}
-              className="flex h-10 w-10 items-center justify-center text-foreground transition-colors hover:bg-accent"
-            >
-              +
-            </button>
-          </div>
+        <div className="mt-6 flex flex-col gap-3">
+          {!isPreorder && !isAccessory && selectedSize && (
+            <p className={cn(
+              "text-xs font-medium",
+              availableStock < 5 ? "text-destructive" : "text-muted-foreground"
+            )}>
+              {availableStock > 0 
+                ? `Disponibles: ${availableStock} unidades` 
+                : "Sin stock disponible"}
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center rounded-md border border-border">
+              <button
+                type="button"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="flex h-10 w-10 items-center justify-center text-foreground transition-colors hover:bg-accent"
+              >
+                -
+              </button>
+              <span className="flex h-10 w-10 items-center justify-center text-sm font-medium text-foreground">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                disabled={!isPreorder && !isAccessory && quantity >= availableStock}
+                onClick={() => setQuantity(quantity + 1)}
+                className="flex h-10 w-10 items-center justify-center text-foreground transition-colors hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                +
+              </button>
+            </div>
 
-          <Button
-            className="flex-1"
-            size="lg"
-            disabled={!canAdd}
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Agregar al Carrito
-          </Button>
+            <Button
+              className="flex-1"
+              size="lg"
+              disabled={!canAdd || isValidating}
+              onClick={handleAddToCart}
+            >
+              {isValidating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <ShoppingCart className="mr-2 h-4 w-4" />
+              )}
+              {isOutOfStock ? "Agotado" : isValidating ? "Validando..." : "Agregar al Carrito"}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

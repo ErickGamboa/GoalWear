@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 const LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/productos", label: "Productos", icon: Package },
+  { href: "/admin/inventario", label: "Inventario", icon: Layers },
   { href: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
   { href: "/admin/parches", label: "Parches", icon: Layers },
 ]

@@ -4,13 +4,57 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useCart } from "@/lib/cart-context"
-import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
-import Link from "next/link"
+import { Minus, Plus, Trash2, ShoppingBag, Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { formatCurrency } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
+import { useState } from "react"
+import { toast } from "sonner"
 
 export function CartSheet() {
+  const router = useRouter()
   const { items, removeItem, updateQuantity, totalPrice, isOpen, setIsOpen } =
     useCart()
+  const [isValidating, setIsValidating] = useState(false)
+
+  const handleCheckout = async () => {
+    setIsValidating(true)
+    try {
+      const supabase = createClient()
+      
+      // Filter immediate items to check stock
+      const immediateItems = items.filter(item => item.category === "immediate")
+      
+      if (immediateItems.length > 0) {
+        // Check stock for all immediate items
+        for (const item of immediateItems) {
+          const { data, error } = await supabase
+            .from("product_sizes")
+            .select("stock")
+            .eq("product_id", item.productId)
+            .eq("size", item.size)
+            .single()
+
+          if (error) throw error
+
+          if (!data || data.stock < item.quantity) {
+            toast.error(`Stock insuficiente para ${item.productName} (${item.size}). Disponibles: ${data?.stock || 0}`)
+            setIsValidating(false)
+            return
+          }
+        }
+      }
+
+      // If all good, proceed to checkout
+      setIsOpen(false)
+      router.push("/checkout")
+    } catch (err) {
+      console.error("Stock validation error:", err)
+      toast.error("Error al validar el inventario")
+    } finally {
+      setIsValidating(false)
+    }
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -111,8 +155,16 @@ export function CartSheet() {
                   {formatCurrency(totalPrice)}
                 </span>
               </div>
-              <Button asChild className="w-full" size="lg" onClick={() => setIsOpen(false)}>
-                <Link href="/checkout">Finalizar Pedido</Link>
+              <Button 
+                className="w-full" 
+                size="lg" 
+                onClick={handleCheckout}
+                disabled={isValidating}
+              >
+                {isValidating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {isValidating ? "Validando Stock..." : "Finalizar Pedido"}
               </Button>
             </div>
           </>

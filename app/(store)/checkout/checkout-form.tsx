@@ -60,6 +60,7 @@ export function CheckoutForm() {
 
       if (!res.ok) {
         const data = await res.json()
+        router.refresh() // Refresh stock data
         throw new Error(data.error || "Error al procesar el pedido")
       }
 

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 export async function POST(request: Request) {
   try {
@@ -22,81 +23,31 @@ export async function POST(request: Request) {
       0
     )
 
-    // Create order
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        customer_name: customer.name,
-        customer_email: customer.email,
-        customer_phone: customer.phone || null,
-        customer_address: customer.address || null,
-        total,
-        notes: customer.notes || null,
-      })
-      .select()
-      .single()
+    // Call the atomic function to create order and decrement stock
+    const { data: orderId, error: rpcError } = await supabase.rpc("place_order_atomic", {
+      p_customer_name: customer.name,
+      p_customer_email: customer.email,
+      p_customer_phone: customer.phone || null,
+      p_customer_address: customer.address || null,
+      p_total: total,
+      p_notes: customer.notes || null,
+      p_items: items, // items is already an array of objects
+    })
 
-    if (orderError) {
-      console.error("Order creation error:", orderError)
+    if (rpcError) {
+      console.error("Atomic order error:", rpcError)
       return NextResponse.json(
-        { error: "Error al crear el pedido" },
-        { status: 500 }
+        { error: rpcError.message || "Error al procesar el pedido o stock insuficiente" },
+        { status: 400 }
       )
     }
 
-    // Create order items
-    const orderItems = items.map(
-      (item: {
-        productId: string
-        productCode: string
-        productName: string
-        quantity: number
-        size: string
-        customName?: string
-        customNumber?: string
-        patches?: string[]
-        unitPrice: number
-        category: string
-      }) => ({
-        order_id: order.id,
-        product_id: item.productId,
-        product_code: item.productCode,
-        product_name: item.productName,
-        quantity: item.quantity,
-        size: item.size || null,
-        custom_name: item.customName || null,
-        custom_number: item.customNumber || null,
-        patches: item.patches || null,
-        unit_price: item.unitPrice,
-        subtotal: item.unitPrice * item.quantity,
-        category: item.category,
-      })
-    )
+    // Revalidate paths to ensure fresh data in store and catalog
+    revalidatePath("/")
+    revalidatePath("/catalogo/[category]", "page")
+    revalidatePath("/admin")
 
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems)
-
-    if (itemsError) {
-      console.error("Order items error:", itemsError)
-      return NextResponse.json(
-        { error: "Error al guardar los productos del pedido" },
-        { status: 500 }
-      )
-    }
-
-    // Decrement stock for immediate delivery items
-    for (const item of items) {
-      if (item.category === "immediate" && item.size) {
-        await supabase.rpc("decrement_stock", {
-          p_product_id: item.productId,
-          p_size: item.size,
-          p_quantity: item.quantity,
-        })
-      }
-    }
-
-    return NextResponse.json({ orderId: order.id })
+    return NextResponse.json({ orderId })
   } catch (error) {
     console.error("Checkout error:", error)
     return NextResponse.json(

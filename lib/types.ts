@@ -38,6 +38,7 @@ export type Order = {
   customer_address: string | null
   total: number
   notes: string | null
+  inventory_processed: boolean
   created_at: string
 }
 

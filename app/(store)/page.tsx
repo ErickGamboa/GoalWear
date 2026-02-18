@@ -15,7 +15,7 @@ async function getFeaturedProducts(query?: string) {
         .from("products")
         .select(`
           *,
-          product_sizes (size)
+          product_sizes (size, stock)
         `)
         .eq("category", category)
         .order("created_at", { ascending: false })
@@ -29,6 +29,7 @@ async function getFeaturedProducts(query?: string) {
       const { data } = await dbQuery
       let list = (data ?? []) as any[]
 
+      // Filter by size if query exists
       if (query) {
         const ql = query.toLowerCase()
         list = list.filter(p => 
@@ -36,6 +37,13 @@ async function getFeaturedProducts(query?: string) {
           (p.team && p.team.toLowerCase().includes(ql)) ||
           p.code.toLowerCase().includes(ql) ||
           p.product_sizes?.some((s: any) => s.size.toLowerCase().includes(ql))
+        )
+      }
+
+      // NEW: Filter out "immediate" products with zero total stock
+      if (category === "immediate") {
+        list = list.filter(p => 
+          p.product_sizes?.some((s: any) => s.stock > 0)
         )
       }
 
