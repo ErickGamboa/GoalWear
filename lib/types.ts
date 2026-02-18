@@ -39,6 +39,7 @@ export type Order = {
   total: number
   notes: string | null
   inventory_processed: boolean
+  status: 'pending' | 'completed'
   created_at: string
 }
 

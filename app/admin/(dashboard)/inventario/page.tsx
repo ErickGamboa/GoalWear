@@ -220,8 +220,8 @@ export default function InventoryPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Producto</TableHead>
-                    <TableHead>Talla</TableHead>
-                    <TableHead className="text-center">Stock</TableHead>
+                    <TableHead className="text-center w-24">Talla</TableHead>
+                    <TableHead className="text-center w-24">Stock</TableHead>
                     <TableHead className="text-right">Precio</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -251,11 +251,11 @@ export default function InventoryPage() {
                             </TableCell>
                           )}
                           <TableCell className="text-center">
-                            <Badge variant="outline">{s.size}</Badge>
+                            <Badge variant="outline" className="w-12 justify-center">{s.size}</Badge>
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={cn(
-                              "font-bold",
+                              "font-bold inline-block w-8",
                               s.stock <= 2 ? "text-destructive" : "text-foreground"
                             )}>
                               {s.stock}

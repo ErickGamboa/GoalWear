@@ -4,15 +4,15 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Package, ShoppingBag, LayoutDashboard, LogOut, Layers } from "lucide-react"
+import { Package, ShoppingBag, LayoutDashboard, LogOut, Box, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/productos", label: "Productos", icon: Package },
-  { href: "/admin/inventario", label: "Inventario", icon: Layers },
+  { href: "/admin/inventario", label: "Inventario", icon: Box },
   { href: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
-  { href: "/admin/parches", label: "Parches", icon: Layers },
+  { href: "/admin/parches", label: "Parches", icon: Sparkles },
 ]
 
 export function AdminSidebar({ userEmail, onSelect }: { userEmail: string; onSelect?: () => void }) {

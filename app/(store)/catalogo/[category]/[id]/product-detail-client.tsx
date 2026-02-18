@@ -61,7 +61,7 @@ export function ProductDetailClient({
 
   const canAdd =
     !isValidating &&
-    (isAccessory || (selectedSize && (isPreorder || availableStock >= quantity))) && 
+    ((isAccessory && selectedSize.trim() !== "") || (selectedSize && (isPreorder || availableStock >= quantity))) && 
     !isOutOfStock && 
     product.has_stock
 
@@ -237,7 +237,7 @@ export function ProductDetailClient({
         )}
 
         {/* Sizes */}
-        {displaySizes.length > 0 && (
+        {displaySizes.length > 0 && !isAccessory && (
           <div className="mt-6">
             <Label className="text-sm font-semibold text-foreground">Talla</Label>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -267,6 +267,22 @@ export function ProductDetailClient({
                 )
               })}
             </div>
+          </div>
+        )}
+
+        {/* Custom Size for Accessories */}
+        {isAccessory && (
+          <div className="mt-6">
+            <Label htmlFor="custom-size" className="text-sm font-semibold text-foreground">
+              Especificar Talla o Tamaño
+            </Label>
+            <Input
+              id="custom-size"
+              placeholder="Ej: M, Única, Ajustable..."
+              value={selectedSize}
+              onChange={(e) => setSelectedSize(e.target.value)}
+              className="mt-2"
+            />
           </div>
         )}
 

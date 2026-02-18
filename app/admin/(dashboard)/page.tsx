@@ -8,17 +8,19 @@ export default async function AdminDashboardPage() {
 
   const [productsRes, ordersRes, patchesRes] = await Promise.all([
     supabase.from("products").select("id", { count: "exact", head: true }),
-    supabase.from("orders").select("id, total"),
+    supabase.from("orders").select("id, total, status"),
     supabase.from("patches").select("id", { count: "exact", head: true }),
   ])
 
   const productCount = productsRes.count ?? 0
   const orders = ordersRes.data ?? []
   const orderCount = orders.length
-  const totalRevenue = orders.reduce(
-    (sum, order) => sum + Number(order.total),
-    0
-  )
+  const totalRevenue = orders
+    .filter(order => order.status === 'completed')
+    .reduce(
+      (sum, order) => sum + Number(order.total),
+      0
+    )
   const patchCount = patchesRes.count ?? 0
 
   const stats = [
