@@ -37,63 +37,65 @@ export default async function ProductsPage() {
         </Button>
       </div>
 
-      <div className="rounded-lg border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Codigo</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Equipo</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead className="text-right">Precio</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {products.length === 0 ? (
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No hay productos
-                </TableCell>
+                <TableHead>Codigo</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Equipo</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead className="text-right">Precio</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
-            ) : (
-              products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-mono text-sm">
-                    {product.code}
-                  </TableCell>
-                  <TableCell className="font-medium text-foreground">
-                    {product.name}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {product.team || "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="text-xs">
-                      {CATEGORY_LABELS[product.category]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(Number(product.price))}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/productos/${product.id}`}>
-                          Editar
-                        </Link>
-                      </Button>
-                      <DeleteProductButton productId={product.id} />
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {products.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="py-8 text-center text-muted-foreground"
+                  >
+                    No hay productos
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-mono text-sm whitespace-nowrap">
+                      {product.code}
+                    </TableCell>
+                    <TableCell className="font-medium text-foreground whitespace-nowrap">
+                      {product.name}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">
+                      {product.team || "-"}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant="secondary" className="text-xs">
+                        {CATEGORY_LABELS[product.category]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-medium whitespace-nowrap">
+                      {formatCurrency(Number(product.price))}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/admin/productos/${product.id}`}>
+                            Editar
+                          </Link>
+                        </Button>
+                        <DeleteProductButton productId={product.id} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   )

@@ -40,11 +40,11 @@ export function ProductSearch() {
   }
 
   return (
-    <div className="relative w-full max-w-[200px] md:max-w-[300px]">
+    <div className="relative flex-1 md:max-w-[300px]">
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="text"
-        placeholder="Buscar productos..."
+        placeholder="Buscar..."
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
         className="h-9 w-full bg-muted/50 pl-9 pr-8 text-xs focus-visible:ring-1"

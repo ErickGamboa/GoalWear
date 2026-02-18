@@ -14,7 +14,7 @@ const LINKS = [
   { href: "/admin/parches", label: "Parches", icon: Layers },
 ]
 
-export function AdminSidebar({ userEmail }: { userEmail: string }) {
+export function AdminSidebar({ userEmail, onSelect }: { userEmail: string; onSelect?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -25,12 +25,14 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
-      <div className="flex items-center gap-2 border-b border-border px-4 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <span className="text-xs font-bold text-primary-foreground">GW</span>
+    <div className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border px-4 py-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <span className="text-xs font-bold text-primary-foreground">GW</span>
+          </div>
+          <span className="text-sm font-bold text-foreground">Admin</span>
         </div>
-        <span className="text-sm font-bold text-foreground">Admin</span>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 p-3">
@@ -44,6 +46,7 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
             <Link
               key={link.href}
               href={link.href}
+              onClick={onSelect}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 isActive
@@ -72,6 +75,6 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
           Cerrar Sesion
         </Button>
       </div>
-    </aside>
+    </div>
   )
 }

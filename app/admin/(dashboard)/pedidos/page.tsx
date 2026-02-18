@@ -25,60 +25,62 @@ export default async function OrdersPage() {
     <div>
       <h1 className="mb-6 text-2xl font-bold text-foreground">Pedidos</h1>
 
-      <div className="rounded-lg border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Telefono</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead className="text-right">Detalles</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.length === 0 ? (
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No hay pedidos
-                </TableCell>
+                <TableHead className="whitespace-nowrap">Fecha</TableHead>
+                <TableHead className="whitespace-nowrap">Cliente</TableHead>
+                <TableHead className="whitespace-nowrap">Email</TableHead>
+                <TableHead className="whitespace-nowrap">Telefono</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Total</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Detalles</TableHead>
               </TableRow>
-            ) : (
-              orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="text-muted-foreground">
-                    {new Date(order.created_at).toLocaleDateString("es-MX", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </TableCell>
-                  <TableCell className="font-medium text-foreground">
-                    {order.customer_name}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {order.customer_email}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {order.customer_phone || "-"}
-                  </TableCell>
-                  <TableCell className="text-right font-bold text-foreground">
-                    {formatCurrency(Number(order.total))}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/admin/pedidos/${order.id}`}>Ver</Link>
-                    </Button>
+            </TableHeader>
+            <TableBody>
+              {orders.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="py-8 text-center text-muted-foreground"
+                  >
+                    No hay pedidos
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                orders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">
+                      {new Date(order.created_at).toLocaleDateString("es-MX", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </TableCell>
+                    <TableCell className="font-medium text-foreground whitespace-nowrap">
+                      {order.customer_name}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">
+                      {order.customer_email}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">
+                      {order.customer_phone || "-"}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-foreground whitespace-nowrap">
+                      {formatCurrency(Number(order.total))}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/admin/pedidos/${order.id}`}>Ver</Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   )

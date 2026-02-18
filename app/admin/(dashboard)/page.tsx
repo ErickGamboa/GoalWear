@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, ShoppingBag, DollarSign, Layers } from "lucide-react"
+import { Package, ShoppingBag, Coins, Layers } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
@@ -23,22 +24,22 @@ export default async function AdminDashboardPage() {
   const stats = [
     {
       label: "Productos",
-      value: productCount,
+      value: productCount.toString(),
       icon: Package,
     },
     {
       label: "Pedidos",
-      value: orderCount,
+      value: orderCount.toString(),
       icon: ShoppingBag,
     },
     {
       label: "Ingresos",
-      value: `$${totalRevenue.toFixed(2)}`,
-      icon: DollarSign,
+      value: formatCurrency(totalRevenue),
+      icon: Coins,
     },
     {
       label: "Parches",
-      value: patchCount,
+      value: patchCount.toString(),
       icon: Layers,
     },
   ]
