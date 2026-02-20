@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useCart } from "@/lib/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import type { ProductWithSizes, Patch } from "@/lib/types"
-import { ShoppingCart, Loader2 } from "lucide-react"
+import { ShoppingCart, Loader2, Lightbulb } from "lucide-react"
 import { toast } from "sonner"
 import { formatCurrency, cn } from "@/lib/utils"
 
@@ -42,7 +42,8 @@ export function ProductDetailClient({
 
   const isPreorder = product.category === "preorder"
   const isAccessory = product.category === "accessory"
-  
+  const isPlayerType = product.name.toLowerCase().includes("player")
+
   const JERSEY_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
   
   // Logic for display sizes
@@ -267,6 +268,16 @@ export function ProductDetailClient({
                 )
               })}
             </div>
+            {isPlayerType && (
+              <div className="mt-3 flex items-start gap-2 rounded-md bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" />
+                <p>
+                  Tip de GoalWear: Las camisetas tipo &quot;player&quot; tienen un corte más ajustado al cuerpo.
+                  Si prefieres un ajuste más cómodo o estás entre dos tallas, te recomendamos
+                  elegir una talla más grande de la que usas regularmente.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
