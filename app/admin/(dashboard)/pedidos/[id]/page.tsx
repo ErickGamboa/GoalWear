@@ -8,7 +8,8 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import type { OrderWithItems } from "@/lib/types"
 import { CATEGORY_LABELS } from "@/lib/types"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, cn } from "@/lib/utils"
+import Image from "next/image"
 
 type Props = {
   params: Promise<{ id: string }>
@@ -20,13 +21,24 @@ export default async function OrderDetailPage({ params }: Props) {
 
   const { data: order } = await supabase
     .from("orders")
-    .select("*, order_items(*)")
+    .select("*, order_items(*, products(image_url))")
     .eq("id", id)
     .single()
 
+  const { data: patchesData } = await supabase
+    .from("patches")
+    .select("name, image_url")
+
+  const patchMap = Object.fromEntries(
+    patchesData?.map((p) => [p.name, p.image_url]) || []
+  )
+
   if (!order) notFound()
 
-  const typedOrder = order as OrderWithItems
+  const typedOrder = order as any // Using any to handle the joined product data easily
+
+  const preorderItems = typedOrder.order_items.filter((item: any) => item.category === "preorder")
+  const otherItems = typedOrder.order_items.filter((item: any) => item.category !== "preorder")
 
   return (
     <div>
@@ -137,49 +149,171 @@ export default async function OrderDetailPage({ params }: Props) {
         </Card>
       </div>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="text-foreground">Productos del Pedido</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {typedOrder.order_items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start justify-between rounded-lg border border-border p-3"
-              >
-                <div>
-                  <p className="font-medium text-foreground">
-                    {item.product_name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.product_code}
-                    {item.size && ` | Talla: ${item.size}`}
-                    {" | x"}
-                    {item.quantity}
-                  </p>
-                  <Badge variant="secondary" className="mt-1 text-xs">
-                    {CATEGORY_LABELS[item.category] || item.category}
-                  </Badge>
-                  {item.custom_name && (
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Personalizacion: {item.custom_name} #{item.custom_number}
+      {preorderItems.length > 0 && (
+        <Card className="mt-6 border-primary/20">
+          <CardHeader className="bg-primary/5">
+            <CardTitle className="text-primary flex items-center gap-2 text-xl">
+              Camisetas - Pedido Previo
+              <Badge>{preorderItems.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50 text-xs font-bold uppercase tracking-wider">
+                    <th className="p-4 text-foreground">Producto</th>
+                    <th className="p-4 text-foreground">IMAGE OF T-Shirt</th>
+                    <th className="p-4 text-foreground">PATCH</th>
+                    <th className="p-4 text-foreground">Name</th>
+                    <th className="p-4 text-foreground">Characteristics</th>
+                    <th className="p-4 text-right text-foreground">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {preorderItems.map((item: any) => {
+                    const isPlayerVersion = item.product_name.toLowerCase().includes("player");
+                    
+                    return (
+                      <tr key={item.id} className="hover:bg-muted/30">
+                        <td className="p-4 min-w-[200px]">
+                          <div className="font-bold text-base text-foreground">{item.product_name}</div>
+                          <div className="text-sm text-muted-foreground font-mono">{item.product_code}</div>
+                        </td>
+                        <td className="p-4">
+                          {item.products?.image_url ? (
+                            <div className="relative h-48 w-48 overflow-hidden rounded-lg border-2 border-border shadow-sm bg-white">
+                              <Image
+                                src={item.products.image_url}
+                                alt={item.product_name}
+                                fill
+                                className="object-contain"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-40 w-40 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground border border-dashed">
+                              Sin imagen
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          {item.patches && item.patches.length > 0 ? (
+                            <div className="flex flex-wrap gap-3">
+                              {item.patches.map((patchName: string) => (
+                                <div 
+                                  key={patchName} 
+                                  title={patchName}
+                                  className="relative h-24 w-24 overflow-hidden rounded-md border border-border bg-white shadow-sm"
+                                >
+                                  {patchMap[patchName] ? (
+                                    <Image
+                                      src={patchMap[patchName]}
+                                      alt={patchName}
+                                      fill
+                                      className="object-contain p-1"
+                                    />
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center bg-muted text-[10px]">
+                                      {patchName}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground italic">Ninguno</span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <span className="text-xl font-black text-foreground uppercase tracking-widest">
+                            {item.custom_name || "-"}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground w-20">Size:</span>
+                              <Badge variant="outline" className="text-sm font-bold px-3">
+                                {item.size}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground w-20">Version:</span>
+                              <span className={cn("font-bold px-2 py-0.5 rounded text-xs uppercase", 
+                                isPlayerVersion ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800")}>
+                                {isPlayerVersion ? "Player" : "Fan"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground w-20">Numero:</span>
+                              <span className="text-lg font-black text-primary">
+                                {item.custom_number || "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground w-20">Cantidad:</span>
+                              <span className="font-bold">{item.quantity}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4 text-right font-bold text-lg text-foreground">
+                          {formatCurrency(Number(item.subtotal))}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {otherItems.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-foreground">Productos del Pedido</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {otherItems.map((item: any) => (
+                <div
+                  key={item.id}
+                  className="flex items-start justify-between rounded-lg border border-border p-3"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {item.product_name}
                     </p>
-                  )}
-                  {item.patches && item.patches.length > 0 && (
                     <p className="text-sm text-muted-foreground">
-                      Parches: {item.patches.join(", ")}
+                      {item.product_code}
+                      {item.size && ` | Talla: ${item.size}`}
+                      {" | x"}
+                      {item.quantity}
                     </p>
-                  )}
+                    <Badge variant="secondary" className="mt-1 text-xs">
+                      {CATEGORY_LABELS[item.category] || item.category}
+                    </Badge>
+                    {item.custom_name && (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Personalizacion: {item.custom_name} #{item.custom_number}
+                      </p>
+                    )}
+                    {item.patches && item.patches.length > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Parches: {item.patches.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {formatCurrency(Number(item.subtotal))}
+                  </span>
                 </div>
-                <span className="text-sm font-bold text-foreground">
-                  {formatCurrency(Number(item.subtotal))}
-                </span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
