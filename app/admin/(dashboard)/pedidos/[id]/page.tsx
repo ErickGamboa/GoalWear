@@ -10,6 +10,7 @@ import type { OrderWithItems } from "@/lib/types"
 import { CATEGORY_LABELS } from "@/lib/types"
 import { formatCurrency, cn } from "@/lib/utils"
 import Image from "next/image"
+import { PatchSelector } from "./patch-selector"
 
 type Props = {
   params: Promise<{ id: string }>
@@ -23,11 +24,15 @@ export default async function OrderDetailPage({ params }: Props) {
     .from("orders")
     .select("*, order_items(*, products(image_url))")
     .eq("id", id)
+    .order("id", { referencedTable: "order_items", ascending: true })
     .single()
 
+  // Ensure fresh data on every request in admin
+  // This helps when revalidatePath is called
   const { data: patchesData } = await supabase
     .from("patches")
     .select("name, image_url")
+    .order('name')
 
   const patchMap = Object.fromEntries(
     patchesData?.map((p) => [p.name, p.image_url]) || []
@@ -197,32 +202,21 @@ export default async function OrderDetailPage({ params }: Props) {
                           )}
                         </td>
                         <td className="p-4">
-                          {item.patches && item.patches.length > 0 ? (
-                            <div className="flex flex-wrap gap-3">
-                              {item.patches.map((patchName: string) => (
-                                <div 
-                                  key={patchName} 
-                                  title={patchName}
-                                  className="relative h-24 w-24 overflow-hidden rounded-md border border-border bg-white shadow-sm"
-                                >
-                                  {patchMap[patchName] ? (
-                                    <Image
-                                      src={patchMap[patchName]}
-                                      alt={patchName}
-                                      fill
-                                      className="object-contain p-1"
-                                    />
-                                  ) : (
-                                    <div className="flex h-full w-full items-center justify-center bg-muted text-[10px]">
-                                      {patchName}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-sm text-muted-foreground italic">Ninguno</span>
-                          )}
+                          <div className="flex flex-wrap gap-3">
+                            {[0, 1].map((index) => {
+                              const patchName = item.patches && item.patches[index] ? item.patches[index] : null;
+                              return (
+                                <PatchSelector
+                                  key={`${item.id}-${index}`}
+                                  orderItemId={item.id}
+                                  patchIndex={index}
+                                  currentPatchName={patchName}
+                                  patchImageUrl={patchName ? patchMap[patchName] : null}
+                                  allPatches={patchesData || []}
+                                />
+                              );
+                            })}
+                          </div>
                         </td>
                         <td className="p-4">
                           <span className="text-xl font-black text-foreground uppercase tracking-widest">

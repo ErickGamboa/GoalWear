@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge"
 import { Search, Loader2, MinusCircle, RefreshCcw } from "lucide-react"
 import { toast } from "sonner"
 import { formatCurrency, cn } from "@/lib/utils"
+import { Combobox } from "@/components/ui/combobox"
 
 export default function InventoryPage() {
   const [loading, setLoading] = useState(true)
@@ -138,21 +139,19 @@ export default function InventoryPage() {
             <form onSubmit={handleManualDecrement} className="space-y-4">
               <div className="space-y-2">
                 <Label>Producto</Label>
-                <Select value={selectedProduct || ""} onValueChange={(val) => {
-                  setSelectedProduct(val)
-                  setSelectedSize(null)
-                }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar producto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.map(p => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.code} - {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Combobox 
+                  value={selectedProduct || ""}
+                  onValueChange={(val) => {
+                    setSelectedProduct(val)
+                    setSelectedSize(null)
+                  }}
+                  options={products.map(p => ({
+                    label: `${p.code} - ${p.name}`,
+                    value: p.id
+                  }))}
+                  placeholder="Seleccionar producto"
+                  searchPlaceholder="Buscar por nombre o código..."
+                />
               </div>
 
               {selectedProduct && (
