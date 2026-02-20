@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useCart } from "@/lib/cart-context"
 import { toast } from "sonner"
 import { ArrowLeft, Loader2 } from "lucide-react"
@@ -20,6 +21,9 @@ export function CheckoutForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
+  const [needsShipping, setNeedsShipping] = useState(false)
+  const SHIPPING_COST = 3500
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -27,6 +31,8 @@ export function CheckoutForm() {
     address: "",
     notes: "",
   })
+
+  const finalTotal = totalPrice + (needsShipping ? SHIPPING_COST : 0)
 
   function updateField(field: string, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -42,7 +48,10 @@ export function CheckoutForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer: formData,
+          customer: {
+            ...formData,
+            needsShipping,
+          },
           items: items.map((item) => ({
             productId: item.productId,
             productCode: item.productCode,
@@ -55,6 +64,7 @@ export function CheckoutForm() {
             unitPrice: item.unitPrice,
             category: item.category,
           })),
+          shippingCost: needsShipping ? SHIPPING_COST : 0,
         }),
       })
 
@@ -119,9 +129,15 @@ export function CheckoutForm() {
           ))}
         </div>
         <Separator className="my-3" />
+        {needsShipping && (
+          <div className="flex items-center justify-between text-sm text-foreground">
+            <span>Envio</span>
+            <span>{formatCurrency(SHIPPING_COST)}</span>
+          </div>
+        )}
         <div className="flex items-center justify-between text-base font-bold text-foreground">
           <span>Total</span>
-          <span>{formatCurrency(totalPrice)}</span>
+          <span>{formatCurrency(finalTotal)}</span>
         </div>
       </div>
 
@@ -156,25 +172,55 @@ export function CheckoutForm() {
             />
           </div>
           <div>
-            <Label htmlFor="phone">Telefono</Label>
+            <Label htmlFor="phone">Telefono *</Label>
             <Input
               id="phone"
+              required
               value={formData.phone}
               onChange={(e) => updateField("phone", e.target.value)}
               placeholder="+52 ..."
               className="mt-1"
             />
           </div>
-          <div>
-            <Label htmlFor="address">Direccion de envio</Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => updateField("address", e.target.value)}
-              placeholder="Calle, numero, ciudad"
-              className="mt-1"
+        </div>
+
+        {/* Shipping Option */}
+        <div className="rounded-lg border border-border p-4">
+          <div className="flex items-start space-x-3">
+            <Checkbox
+              id="needsShipping"
+              checked={needsShipping}
+              onCheckedChange={(checked) => setNeedsShipping(checked as boolean)}
             />
+            <div className="space-y-1 leading-none">
+              <Label
+                htmlFor="needsShipping"
+                className="text-sm font-semibold text-foreground"
+              >
+                Requiero envio a domicilio
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Costo adicional de {formatCurrency(SHIPPING_COST)}
+              </p>
+            </div>
           </div>
+
+          {needsShipping && (
+            <div className="mt-4">
+              <Label htmlFor="address">Direccion de envio *</Label>
+              <Input
+                id="address"
+                required={needsShipping}
+                value={formData.address}
+                onChange={(e) => updateField("address", e.target.value)}
+                placeholder="Calle, numero, ciudad, provincia"
+                className="mt-1"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                El costo de envio sera agregado a tu pedido
+              </p>
+            </div>
+          )}
         </div>
 
         <div>

@@ -37,6 +37,7 @@ export type Order = {
   customer_phone: string | null
   customer_address: string | null
   total: number
+  shipping_cost: number
   notes: string | null
   inventory_processed: boolean
   status: 'pending' | 'completed'

@@ -75,12 +75,19 @@ export default async function OrderDetailPage({ params }: Props) {
               </div>
             )}
             {typedOrder.customer_address && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Direccion</span>
-                <span className="text-right text-foreground">
-                  {typedOrder.customer_address}
-                </span>
-              </div>
+              <>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    Con envio a domicilio
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Direccion</span>
+                  <span className="text-right text-foreground">
+                    {typedOrder.customer_address}
+                  </span>
+                </div>
+              </>
             )}
             {typedOrder.notes && (
               <>
@@ -99,10 +106,30 @@ export default async function OrderDetailPage({ params }: Props) {
             <CardTitle className="text-foreground">Resumen</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">
-              {formatCurrency(Number(typedOrder.total))}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-foreground">
+                  {formatCurrency(Number(typedOrder.total) - Number(typedOrder.shipping_cost || 0))}
+                </span>
+              </div>
+              {typedOrder.shipping_cost > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Envio</span>
+                  <span className="text-foreground">
+                    {formatCurrency(Number(typedOrder.shipping_cost))}
+                  </span>
+                </div>
+              )}
+              <Separator />
+              <div className="flex justify-between">
+                <span className="font-semibold text-foreground">Total</span>
+                <span className="text-2xl font-bold text-foreground">
+                  {formatCurrency(Number(typedOrder.total))}
+                </span>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-4 text-sm text-muted-foreground">
               {typedOrder.order_items.length} producto
               {typedOrder.order_items.length !== 1 ? "s" : ""}
             </p>

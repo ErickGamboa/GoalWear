@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { customer, items } = body
+    const { customer, items, shippingCost = 0 } = body
 
     if (!customer?.name || !customer?.email || !items?.length) {
       return NextResponse.json(
@@ -14,14 +14,23 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validate shipping address if shipping is required
+    if (customer.needsShipping && !customer.address) {
+      return NextResponse.json(
+        { error: "La direccion de envio es requerida" },
+        { status: 400 }
+      )
+    }
+
     const supabase = await createClient()
 
     // Calculate total
-    const total = items.reduce(
+    const itemsTotal = items.reduce(
       (sum: number, item: { unitPrice: number; quantity: number }) =>
         sum + item.unitPrice * item.quantity,
       0
     )
+    const total = itemsTotal + shippingCost
 
     // Call the atomic function to create order and decrement stock
     const { data: orderId, error: rpcError } = await supabase.rpc("place_order_atomic", {
@@ -30,8 +39,9 @@ export async function POST(request: Request) {
       p_customer_phone: customer.phone || null,
       p_customer_address: customer.address || null,
       p_total: total,
+      p_shipping_cost: shippingCost,
       p_notes: customer.notes || null,
-      p_items: items, // items is already an array of objects
+      p_items: items,
     })
 
     if (rpcError) {

@@ -21,6 +21,9 @@ export default function SuccessPageClient() {
         Tu pedido ha sido recibido exitosamente. Nos pondremos en contacto
         contigo pronto para confirmar los detalles de envio.
       </p>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Si seleccionaste envio a domicilio, el costo de envio ya ha sido incluido en el total de tu pedido.
+      </p>
       <Button onClick={handleReturn} className="mt-8">
         Volver a la Tienda
       </Button>
