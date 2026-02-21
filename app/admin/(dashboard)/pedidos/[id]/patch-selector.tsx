@@ -58,7 +58,7 @@ export function PatchSelector({
       <DialogTrigger asChild>
         <button
           className={cn(
-            "group relative h-24 w-24 overflow-hidden rounded-md border transition-all",
+            "group relative h-40 w-40 overflow-hidden rounded-lg border transition-all",
             currentPatchName 
               ? "border-border bg-white shadow-sm hover:border-primary hover:ring-2 hover:ring-primary/20" 
               : "border-transparent bg-transparent hover:border-dashed hover:border-muted-foreground/30 hover:bg-muted/10"
@@ -70,10 +70,10 @@ export function PatchSelector({
               src={patchImageUrl}
               alt={currentPatchName}
               fill
-              className="object-contain p-1 transition-transform group-hover:scale-110"
+              className="object-contain p-2 transition-transform group-hover:scale-110"
             />
           ) : currentPatchName ? (
-            <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-bold">
+            <div className="flex h-full w-full items-center justify-center bg-muted text-xs font-bold">
               {currentPatchName}
             </div>
           ) : null}
@@ -83,9 +83,9 @@ export function PatchSelector({
             currentPatchName ? "bg-black/40" : "bg-primary/5"
           )}>
             {currentPatchName ? (
-              <RefreshCw className="h-6 w-6 text-white" />
+              <RefreshCw className="h-8 w-8 text-white" />
             ) : (
-              <Plus className="h-8 w-8 text-primary/40" />
+              <Plus className="h-10 w-10 text-primary/40" />
             )}
           </div>
         </button>
@@ -98,12 +98,12 @@ export function PatchSelector({
           {/* Option to remove patch */}
           <Button
             variant="outline"
-            className="flex h-auto flex-col gap-2 p-2 hover:border-destructive hover:bg-destructive/5"
+            className="flex h-auto flex-col gap-2 p-3 hover:border-destructive hover:bg-destructive/5"
             onClick={() => handlePatchSelect(null)}
             disabled={loading}
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded bg-muted">
-              <X className="h-8 w-8 text-destructive" />
+            <div className="flex h-20 w-20 items-center justify-center rounded bg-muted">
+              <X className="h-10 w-10 text-destructive" />
             </div>
             <span className="text-[10px] uppercase font-bold text-destructive">Eliminar</span>
           </Button>
@@ -112,22 +112,22 @@ export function PatchSelector({
             <Button
               key={patch.name}
               variant={patch.name === currentPatchName ? "default" : "outline"}
-              className={`flex h-auto flex-col gap-2 p-2 ${
+              className={`flex h-auto flex-col gap-2 p-3 ${
                 patch.name === currentPatchName ? "ring-2 ring-primary ring-offset-2" : ""
               }`}
               onClick={() => handlePatchSelect(patch.name)}
               disabled={loading || patch.name === currentPatchName}
             >
-              <div className="relative h-16 w-16 overflow-hidden rounded bg-white">
+              <div className="relative h-20 w-20 overflow-hidden rounded bg-white">
                 {patch.image_url ? (
                   <Image
                     src={patch.image_url}
                     alt={patch.name}
                     fill
-                    className="object-contain p-1"
+                    className="object-contain p-2"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[8px]">
+                  <div className="flex h-full w-full items-center justify-center text-[10px]">
                     {patch.name}
                   </div>
                 )}
