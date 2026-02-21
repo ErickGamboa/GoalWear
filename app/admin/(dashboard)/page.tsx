@@ -16,7 +16,7 @@ export default async function AdminDashboardPage() {
   const orders = ordersRes.data ?? []
   const orderCount = orders.length
   const totalRevenue = orders
-    .filter(order => order.status === 'completed')
+    .filter(order => order.status === 'delivered')
     .reduce(
       (sum, order) => sum + Number(order.total),
       0

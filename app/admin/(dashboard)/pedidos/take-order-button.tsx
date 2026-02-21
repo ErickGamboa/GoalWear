@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { Loader2, CheckCircle2 } from "lucide-react"
+import { Loader2, Hand } from "lucide-react"
 import type { OrderWithItems } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import {
@@ -17,27 +17,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { completeOrder } from "./actions"
+import { takeOrder } from "./actions"
 
-export function CompleteOrderButton({ order }: { order: OrderWithItems }) {
+export function TakeOrderButton({ order }: { order: OrderWithItems }) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  if (order.status === 'completed') return null
+  if (order.status !== 'pending') return null
 
-  const handleComplete = async () => {
+  const handleTake = async () => {
     setLoading(true)
     try {
-      const result = await completeOrder(order.id)
+      const result = await takeOrder(order.id)
 
       if (!result.success) {
         throw new Error(result.message)
       }
 
-      toast.success("Pedido finalizado con éxito")
+      toast.success("Pedido tomado con éxito")
       router.refresh() 
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al finalizar pedido")
+      toast.error(err instanceof Error ? err.message : "Error al tomar pedido")
     } finally {
       setLoading(false)
     }
@@ -49,29 +49,29 @@ export function CompleteOrderButton({ order }: { order: OrderWithItems }) {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-          title="Finalizar Pedido"
+          className="h-8 w-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+          title="Tomar Pedido"
           disabled={loading}
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <CheckCircle2 className="h-4 w-4" />
+            <Hand className="h-4 w-4" />
           )}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Finalizar pedido?</AlertDialogTitle>
+          <AlertDialogTitle>¿Tomar pedido?</AlertDialogTitle>
           <AlertDialogDescription>
-            El pedido se moverá al historial y su total se sumará a los ingresos del dashboard.
+            El pedido se moverá al historial en amarillo, listo para ser entregado.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <AlertDialogAction 
-            onClick={handleComplete}
-            className="bg-green-600 hover:bg-green-700"
+            onClick={handleTake}
+            className="bg-yellow-600 hover:bg-yellow-700"
           >
             Confirmar
           </AlertDialogAction>

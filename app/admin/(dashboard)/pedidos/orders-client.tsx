@@ -15,16 +15,21 @@ import Link from "next/link"
 import type { OrderWithItems } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { InventoryButton } from "./inventory-button"
-import { CompleteOrderButton } from "./complete-order-button"
+import { TakeOrderButton } from "./take-order-button"
+import { DeliverOrderButton } from "./deliver-order-button"
 
 import { cn } from "@/lib/utils"
 
 export function OrdersClient({ orders }: { orders: OrderWithItems[] }) {
-  // Pending: Active orders (stock processed AND not completed)
-  const pendingOrders = orders.filter(o => o.status !== 'completed' && o.inventory_processed)
+  // Pending: Active orders (stock processed AND status = pending)
+  const pendingOrders = orders.filter(o => o.status === 'pending' && o.inventory_processed)
   
-  // History: Completed orders OR Reverted orders (inventory_processed = false)
-  const historyOrders = orders.filter(o => o.status === 'completed' || !o.inventory_processed)
+  // History: Taken, Delivered, or Reverted orders
+  const historyOrders = orders.filter(o => 
+    o.status === 'taken' || 
+    o.status === 'delivered' || 
+    !o.inventory_processed
+  )
 
   const renderTable = (orderList: OrderWithItems[], isHistory = false) => (
     <div className="rounded-lg border border-border overflow-hidden">
@@ -52,15 +57,17 @@ export function OrdersClient({ orders }: { orders: OrderWithItems[] }) {
               </TableRow>
             ) : (
               orderList.map((order) => {
-                const isCompleted = order.status === 'completed'
+                const isTaken = order.status === 'taken'
+                const isDelivered = order.status === 'delivered'
                 const isReverted = !order.inventory_processed
                 
                 return (
                   <TableRow 
                     key={order.id}
                     className={cn(
-                      isHistory && isCompleted && "bg-green-100 hover:bg-green-200 dark:bg-green-900/40 dark:hover:bg-green-900/50",
-                      isHistory && isReverted && "bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/50"
+                      isTaken && "bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/40",
+                      isDelivered && "bg-green-100 hover:bg-green-200 dark:bg-green-900/40 dark:hover:bg-green-900/50",
+                      isReverted && "bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/50"
                     )}
                   >
                     <TableCell className="text-muted-foreground whitespace-nowrap">
@@ -86,9 +93,12 @@ export function OrdersClient({ orders }: { orders: OrderWithItems[] }) {
                       <div className="flex items-center justify-end gap-2">
                         {!isHistory && (
                           <>
-                            <CompleteOrderButton order={order} />
+                            <TakeOrderButton order={order} />
                             <InventoryButton order={order} />
                           </>
+                        )}
+                        {isHistory && isTaken && (
+                          <DeliverOrderButton order={order} />
                         )}
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/admin/pedidos/${order.id}`}>Ver</Link>
