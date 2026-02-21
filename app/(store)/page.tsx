@@ -29,7 +29,6 @@ async function getFeaturedProducts(query?: string) {
       const { data } = await dbQuery
       let list = (data ?? []) as any[]
 
-      // Filter by size if query exists
       if (query) {
         const ql = query.toLowerCase()
         list = list.filter(p => 
@@ -40,7 +39,6 @@ async function getFeaturedProducts(query?: string) {
         )
       }
 
-      // NEW: Filter out "immediate" products with zero total stock
       if (category === "immediate") {
         list = list.filter(p => 
           p.product_sizes?.some((s: any) => s.stock > 0)
@@ -66,20 +64,19 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      {/* Hero */}
       {!isSearching && (
-        <section className="relative overflow-hidden bg-foreground px-4 py-20 md:py-28">
-          <div className="mx-auto max-w-7xl text-center">
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-background md:text-6xl">
-              Camisetas Deportivas
+        <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-background px-4 py-24 md:py-32">
+          <div className="text-center">
+            <h1 className="animate-in fade-in slide-in-from-bottom-8 duration-700 text-[12vw] font-black uppercase tracking-tight text-foreground leading-none md:text-[10vw] lg:text-[8vw]">
+              GOALWEAR
             </h1>
-            <p className="mx-auto mt-4 max-w-xl text-pretty text-base text-background/70 md:text-lg">
-              Encuentra las mejores camisetas de tus equipos favoritos. Entrega inmediata, pedidos personalizados y accesorios.
+            <p className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 mt-6 max-w-md mx-auto text-balance text-base text-muted-foreground md:text-lg">
+              Las mejores camisetas de futbol. Entrega inmediata y personalizacion premium.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Button asChild size="lg">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 mt-10 flex flex-wrap items-center justify-center gap-3">
+              <Button asChild size="lg" className="rounded-full h-12 px-8 font-bold uppercase tracking-widest transition-all duration-300 hover:scale-105 active:scale-95">
                 <Link href="/catalogo/entrega-inmediata">
-                  Entrega Inmediata
+                  Ver Catalogo
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -87,22 +84,21 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 asChild
                 variant="outline"
                 size="lg"
-                className="border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background"
+                className="rounded-full h-12 px-8 font-bold uppercase tracking-widest transition-all duration-300 hover:bg-foreground hover:text-background hover:scale-105 active:scale-95"
               >
-                <Link href="/catalogo/pedido-previo">Personalizar Camiseta</Link>
+                <Link href="/catalogo/pedido-previo">Personalizar</Link>
               </Button>
             </div>
           </div>
         </section>
       )}
 
-      {/* Category Sections */}
       <div className="mx-auto max-w-7xl px-4 py-12 md:py-16">
         {isSearching && (
-          <div className="mb-8 border-b pb-4">
-            <h1 className="text-2xl font-bold">Resultados para: "{query}"</h1>
-            <p className="text-muted-foreground">
-              Mostrando coincidencias en todas las categorías
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mb-10 border-b border-border/50 pb-6">
+            <h1 className="text-2xl font-bold text-foreground">Resultados para &quot;{query}&quot;</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Mostrando coincidencias en todas las categorias
             </p>
           </div>
         )}
@@ -151,14 +147,14 @@ function CategorySection({
   if (isSearching && products.length === 0) return null
 
   return (
-    <section className="mb-12 last:mb-0">
-      <div className="mb-6 flex items-end justify-between">
+    <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 mb-16 last:mb-0">
+      <div className="mb-8 flex items-end justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <h2 className="text-2xl font-bold text-foreground md:text-3xl">{title}</h2>
+          <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
         </div>
         {!isSearching && (
-          <Button asChild variant="ghost" className="hidden sm:flex">
+          <Button asChild variant="ghost" className="hidden rounded-full sm:flex transition-all duration-300 hover:bg-foreground hover:text-background">
             <Link href={href}>
               Ver todos
               <ArrowRight className="ml-1 h-4 w-4" />
@@ -168,13 +164,13 @@ function CategorySection({
       </div>
 
       {products.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:gap-6 md:grid-cols-4 overflow-hidden">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (
-        <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-border">
+        <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-border/50 bg-muted/20">
           <p className="text-sm text-muted-foreground">
             Proximamente se agregaran productos
           </p>
@@ -182,8 +178,8 @@ function CategorySection({
       )}
 
       {!isSearching && (
-        <div className="mt-4 text-center sm:hidden">
-          <Button asChild variant="outline" size="sm">
+        <div className="mt-6 text-center sm:hidden">
+          <Button asChild variant="outline" size="sm" className="rounded-full">
             <Link href={href}>
               Ver todos
               <ArrowRight className="ml-1 h-4 w-4" />

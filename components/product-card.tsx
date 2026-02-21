@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,9 +8,6 @@ import { CATEGORY_SLUGS } from "@/lib/types"
 import { cn, formatCurrency } from "@/lib/utils"
 
 export function ProductCard({ product }: { product: Product }) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isHovered, setIsHovered] = useState(false)
-  
   const images = [
     product.image_url,
     product.image_url_2,
@@ -22,85 +17,42 @@ export function ProductCard({ product }: { product: Product }) {
   const slug = CATEGORY_SLUGS[product.category]
   const inStock = product.has_stock
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isHovered && images.length > 1) {
-      interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % images.length)
-      }, 1500)
-    } else {
-      setCurrentIndex(0)
-    }
-    return () => clearInterval(interval)
-  }, [isHovered, images.length])
-
   return (
     <Link href={`/catalogo/${slug}/${product.id}`}>
-      <Card 
-        className="group overflow-hidden border-border transition-all hover:shadow-md"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-          {images.length > 0 ? (
-            <>
-              <img
-                src={images[currentIndex] || "/placeholder.svg"}
-                alt={product.name}
-                className="h-full w-full object-cover transition-all duration-500"
-              />
-              
-              {/* Dots Indicators */}
-              {images.length > 1 && (
-                <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 px-2">
-                  {images.map((_, i) => (
-                    <div
-                      key={i}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setCurrentIndex(i)
-                      }}
-                      className={cn(
-                        "h-1 rounded-full transition-all duration-300",
-                        currentIndex === i 
-                          ? "w-4 bg-primary" 
-                          : "w-1 bg-white/60 hover:bg-white"
-                      )}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-              <span className="text-4xl font-bold opacity-20">GW</span>
-            </div>
-          )}
+      <article className="group relative overflow-hidden rounded-xl border border-border/50 bg-card transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1.5 hover:shadow-lg hover:shadow-black/5 hover:border-border">
+        <div className="relative aspect-[4/5] overflow-hidden bg-muted/50">
+          <img
+            src={images[0] || "/placeholder.svg"}
+            alt={product.name}
+            className="h-full w-full object-cover"
+          />
+          
           {!inStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-              <Badge variant="secondary" className="text-xs">
-                Agotado
+            <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-[2px]">
+              <Badge className="bg-foreground text-background px-3 py-1 uppercase text-xs font-bold tracking-wider">
+                Sin Stock
               </Badge>
             </div>
           )}
         </div>
-        <CardContent className="p-3">
+        
+        <CardContent className="p-4">
           {product.team && (
-            <p className="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               {product.team}
             </p>
           )}
-          <h3 className="text-sm font-semibold text-foreground leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+          <h3 className="text-sm font-semibold text-foreground leading-tight line-clamp-1">
             {product.name}
           </h3>
-          <div className="mt-1.5 flex items-center justify-between">
-            <span className="text-sm font-bold text-foreground">
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-base font-black text-foreground">
               {formatCurrency(Number(product.price))}
             </span>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase">{product.code}</span>
+            <span className="text-[10px] font-mono text-muted-foreground/50">{product.code}</span>
           </div>
         </CardContent>
-      </Card>
+      </article>
     </Link>
   )
 }

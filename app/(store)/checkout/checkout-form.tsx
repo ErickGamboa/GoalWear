@@ -70,7 +70,7 @@ export function CheckoutForm() {
 
       if (!res.ok) {
         const data = await res.json()
-        router.refresh() // Refresh stock data
+        router.refresh()
         throw new Error(data.error || "Error al procesar el pedido")
       }
 
@@ -89,7 +89,7 @@ export function CheckoutForm() {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
         <p className="text-muted-foreground">Tu carrito esta vacio</p>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="rounded-full">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a la Tienda
@@ -101,19 +101,19 @@ export function CheckoutForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Order Summary */}
-      <div className="rounded-lg border border-border p-4">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 rounded-2xl border border-border/50 bg-muted/20 p-6">
+        <h2 className="mb-4 text-lg font-bold text-foreground uppercase tracking-tight">
           Resumen del Pedido
         </h2>
         <div className="space-y-3">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <div
               key={item.id}
-              className="flex items-center justify-between text-sm"
+              style={{ animationDelay: `${index * 50}ms` }}
+              className="animate-in fade-in slide-in-from-left-4 duration-300 flex items-center justify-between text-sm"
             >
               <div className="flex-1">
-                <p className="font-medium text-foreground">
+                <p className="font-semibold text-foreground">
                   {item.productName}
                   {item.size && ` (${item.size})`}
                 </p>
@@ -122,45 +122,44 @@ export function CheckoutForm() {
                   {item.customName && ` | ${item.customName} #${item.customNumber}`}
                 </p>
               </div>
-              <span className="font-medium text-foreground">
+              <span className="font-bold text-foreground">
                 {formatCurrency(item.unitPrice * item.quantity)}
               </span>
             </div>
           ))}
         </div>
-        <Separator className="my-3" />
+        <Separator className="my-4" />
         {needsShipping && (
-          <div className="flex items-center justify-between text-sm text-foreground">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>Envio</span>
-            <span>{formatCurrency(SHIPPING_COST)}</span>
+            <span className="font-medium">{formatCurrency(SHIPPING_COST)}</span>
           </div>
         )}
-        <div className="flex items-center justify-between text-base font-bold text-foreground">
+        <div className="mt-2 flex items-center justify-between text-xl font-black text-foreground">
           <span>Total</span>
           <span>{formatCurrency(finalTotal)}</span>
         </div>
       </div>
 
-      {/* Customer Info */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 delay-100 space-y-4">
+        <h2 className="text-lg font-bold text-foreground uppercase tracking-tight">
           Datos del Cliente
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="name">Nombre completo *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Nombre completo *</Label>
             <Input
               id="name"
               required
               value={formData.name}
               onChange={(e) => updateField("name", e.target.value)}
               placeholder="Tu nombre"
-              className="mt-1"
+              className="h-12 rounded-xl border-border/50 bg-background font-medium focus:border-foreground transition-all"
             />
           </div>
-          <div>
-            <Label htmlFor="email">Correo electronico *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Correo electronico *</Label>
             <Input
               id="email"
               type="email"
@@ -168,82 +167,75 @@ export function CheckoutForm() {
               value={formData.email}
               onChange={(e) => updateField("email", e.target.value)}
               placeholder="tu@email.com"
-              className="mt-1"
+              className="h-12 rounded-xl border-border/50 bg-background font-medium focus:border-foreground transition-all"
             />
           </div>
-          <div>
-            <Label htmlFor="phone">Telefono *</Label>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Telefono *</Label>
             <Input
               id="phone"
               required
               value={formData.phone}
               onChange={(e) => updateField("phone", e.target.value)}
-              placeholder="+52 ..."
-              className="mt-1"
+              placeholder="+506 ..."
+              className="h-12 rounded-xl border-border/50 bg-background font-medium focus:border-foreground transition-all"
             />
           </div>
         </div>
 
-        {/* Shipping Option */}
-        <div className="rounded-lg border border-border p-4">
-          <div className="flex items-start space-x-3">
+        <div className="rounded-2xl border border-border/50 p-4 transition-colors hover:border-border">
+          <label className="flex items-start gap-3 cursor-pointer">
             <Checkbox
               id="needsShipping"
               checked={needsShipping}
               onCheckedChange={(checked) => setNeedsShipping(checked as boolean)}
+              className="mt-1"
             />
             <div className="space-y-1 leading-none">
-              <Label
-                htmlFor="needsShipping"
-                className="text-sm font-semibold text-foreground"
-              >
+              <span className="text-sm font-bold text-foreground">
                 Requiero envio a domicilio
-              </Label>
+              </span>
               <p className="text-xs text-muted-foreground">
                 Costo adicional de {formatCurrency(SHIPPING_COST)}
               </p>
             </div>
-          </div>
+          </label>
 
           {needsShipping && (
-            <div className="mt-4">
-              <Label htmlFor="address">Direccion de envio *</Label>
+            <div className="mt-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              <Label htmlFor="address" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Direccion de envio *</Label>
               <Input
                 id="address"
                 required={needsShipping}
                 value={formData.address}
                 onChange={(e) => updateField("address", e.target.value)}
                 placeholder="Calle, numero, ciudad, provincia"
-                className="mt-1"
+                className="h-12 rounded-xl border-border/50 bg-background font-medium focus:border-foreground transition-all"
               />
-              <p className="mt-1 text-xs text-muted-foreground">
-                El costo de envio sera agregado a tu pedido
-              </p>
             </div>
           )}
         </div>
 
-        <div>
-          <Label htmlFor="notes">Notas adicionales</Label>
+        <div className="space-y-2">
+          <Label htmlFor="notes" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Notas adicionales</Label>
           <Textarea
             id="notes"
             value={formData.notes}
             onChange={(e) => updateField("notes", e.target.value)}
             placeholder="Indicaciones especiales..."
-            className="mt-1"
-            rows={3}
+            className="rounded-xl border-border/50 bg-background font-medium focus:border-foreground transition-all min-h-[100px]"
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-        <Button asChild variant="outline" type="button">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 delay-200 flex flex-col gap-3 sm:flex-row sm:justify-between">
+        <Button asChild variant="outline" type="button" className="rounded-full h-12 px-6">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Seguir Comprando
           </Link>
         </Button>
-        <Button type="submit" size="lg" disabled={loading}>
+        <Button type="submit" size="lg" disabled={loading} className="rounded-full h-12 px-8 font-bold uppercase tracking-widest transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]">
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Confirmar Pedido
         </Button>

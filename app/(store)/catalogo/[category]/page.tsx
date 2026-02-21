@@ -47,15 +47,8 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
   let productList = (products ?? []) as any[]
 
-  // Filter by size if query exists and no name/team/code match was found for those sizes
   if (query) {
     const queryLower = query.toLowerCase()
-    // Products already found by or() filter
-    // We add products where at least one size matches the query
-    // This is already done for name/team/code, but if someone searches just "XL",
-    // the .or() above won't catch it unless the name has "XL".
-    // So we refine the list to include size matches if they aren't already there.
-    // However, since we selected product_sizes, we can do it in JS.
     productList = productList.filter(p => 
       p.name.toLowerCase().includes(queryLower) ||
       (p.team && p.team.toLowerCase().includes(queryLower)) ||
@@ -64,7 +57,6 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     )
   }
 
-  // NEW: Filter out "immediate" products with zero total stock
   if (category === "immediate") {
     productList = productList.filter(p => 
       p.product_sizes?.some((s: any) => s.stock > 0)
@@ -72,23 +64,26 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">{label}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {productList.length} producto{productList.length !== 1 ? "s" : ""}
+    <div className="mx-auto max-w-7xl px-4 py-10 md:py-16">
+      <header className="animate-in fade-in slide-in-from-bottom-4 duration-500 mb-10">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
+          Catalogo
         </p>
-      </div>
+        <h1 className="text-4xl font-bold text-foreground md:text-5xl">{label}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {productList.length} producto{productList.length !== 1 ? "s" : ""} disponible{productList.length !== 1 ? "s" : ""}
+        </p>
+      </header>
 
       {productList.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:gap-6 md:grid-cols-3 lg:grid-cols-4 overflow-hidden">
           {productList.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (
-        <div className="flex h-60 items-center justify-center rounded-lg border border-dashed border-border">
-          <p className="text-muted-foreground">
+        <div className="animate-in fade-in duration-500 flex h-72 items-center justify-center rounded-2xl border border-dashed border-border/50 bg-muted/20">
+          <p className="text-sm text-muted-foreground">
             No hay productos en esta categoria aun
           </p>
         </div>

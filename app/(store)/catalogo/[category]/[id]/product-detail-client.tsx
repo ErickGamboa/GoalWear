@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
 import { useCart } from "@/lib/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import type { ProductWithSizes, Patch } from "@/lib/types"
@@ -46,7 +45,6 @@ export function ProductDetailClient({
 
   const JERSEY_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
   
-  // Logic for display sizes
   const displaySizes = isPreorder 
     ? JERSEY_SIZES.map(size => ({ 
         id: size, 
@@ -92,7 +90,6 @@ export function ProductDetailClient({
   async function handleAddToCart() {
     if (!canAdd) return
 
-    // Final Validation against DB before adding
     if (!isPreorder && !isAccessory) {
       setIsValidating(true)
       try {
@@ -148,7 +145,7 @@ export function ProductDetailClient({
         return prev.filter((p) => p !== patchName)
       }
       if (prev.length >= 2) {
-        toast.error("Máximo 2 parches por camiseta")
+        toast.error("Maximo 2 parches por camiseta")
         return prev
       }
       return [...prev, patchName]
@@ -156,33 +153,30 @@ export function ProductDetailClient({
   }
 
   return (
-    <div className="grid gap-8 md:grid-cols-2">
-      {/* Product Images */}
-      <div className="space-y-4">
+    <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+      <div className="animate-in fade-in slide-in-from-left-4 duration-500 space-y-4">
         <div 
           ref={containerRef}
-          className="relative aspect-square overflow-hidden rounded-xl bg-muted border border-border cursor-crosshair"
+          className="relative aspect-square overflow-hidden rounded-2xl bg-muted/50 border border-border/50 cursor-crosshair group"
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
           {activeImage ? (
-            <>
-              <img
-                src={activeImage}
-                alt={product.name}
-                className="h-full w-full object-cover transition-all"
-              />
-              {/* Zoom Overlay (Desktop only) */}
-              <div 
-                className="absolute inset-0 z-10 hidden md:block pointer-events-none"
-                style={zoomStyle}
-              />
-            </>
+            <img
+              src={activeImage}
+              alt={product.name}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground">
               <span className="text-8xl font-bold opacity-10">GW</span>
             </div>
           )}
+          
+          <div 
+            className="absolute inset-0 z-10 hidden md:block pointer-events-none rounded-2xl border-2 border-foreground/10"
+            style={zoomStyle}
+          />
         </div>
 
         {images.length > 1 && (
@@ -192,11 +186,12 @@ export function ProductDetailClient({
                 key={i}
                 type="button"
                 onClick={() => setActiveImage(img)}
-                className={`relative aspect-square w-20 overflow-hidden rounded-lg border-2 transition-all ${
+                className={cn(
+                  "relative aspect-square w-20 overflow-hidden rounded-xl border-2 transition-all shrink-0 hover:scale-105",
                   activeImage === img
-                    ? "border-primary ring-2 ring-primary/20"
+                    ? "border-foreground scale-105 shadow-lg shadow-black/10"
                     : "border-transparent hover:border-border"
-                }`}
+                )}
               >
                 <img
                   src={img}
@@ -209,59 +204,67 @@ export function ProductDetailClient({
         )}
       </div>
 
-      {/* Product Info */}
-      <div className="flex flex-col">
-        <Badge variant="secondary" className="mb-2 w-fit text-xs">
+      <div className="animate-in fade-in slide-in-from-right-4 duration-500 flex flex-col">
+        <Badge variant="outline" className="w-fit font-mono text-xs font-bold uppercase tracking-widest px-3 py-1 bg-muted/30">
           {product.code}
         </Badge>
+        
         {product.team && (
-          <p className="text-sm font-medium text-muted-foreground">
+          <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
             {product.team}
           </p>
         )}
-        <h1 className="mt-1 text-2xl font-bold text-foreground md:text-3xl">
+        
+        <h1 className="mt-2 text-3xl font-black text-foreground md:text-4xl leading-tight">
           {product.name}
         </h1>
-        <p className="mt-3 text-3xl font-bold text-primary">
-          {formatCurrency(unitPrice)}
-        </p>
-        {patchTotal > 0 && (
-          <p className="text-sm text-muted-foreground">
-            Precio base: {formatCurrency(Number(product.price))} + Parches: {formatCurrency(patchTotal)}
-          </p>
-        )}
+        
+        <div className="mt-4 flex items-baseline gap-3">
+          <span className="text-3xl font-black text-foreground">
+            {formatCurrency(unitPrice)}
+          </span>
+          {isPreorder && (
+            <Badge variant="outline" className="text-xs font-bold">
+              Incluye Personalizacion
+            </Badge>
+          )}
+        </div>
 
         {!product.has_stock && (
-          <Badge variant="destructive" className="mt-3 w-fit">
-            Producto no disponible
-          </Badge>
+          <div className="mt-6 flex items-center gap-2 rounded-xl bg-muted/50 p-4 text-muted-foreground border border-border/50">
+            <span className="font-bold uppercase tracking-widest text-sm">Producto no disponible temporalmente</span>
+          </div>
         )}
 
-        {/* Sizes */}
         {displaySizes.length > 0 && !isAccessory && (
-          <div className="mt-6">
-            <Label className="text-sm font-semibold text-foreground">Talla</Label>
-            <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-8">
+            <Label className="text-xs font-bold uppercase tracking-widest text-foreground">Seleccionar Talla</Label>
+            <div className="mt-3 flex flex-wrap gap-2">
               {displaySizes.map((s) => {
                 const outOfStock = !isPreorder && s.stock < 1
+                const isSelected = selectedSize === s.size
                 return (
                   <button
                     key={s.id}
                     type="button"
                     disabled={outOfStock}
                     onClick={() => setSelectedSize(s.size)}
-                    className={`flex h-10 min-w-[2.5rem] items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors ${
-                      selectedSize === s.size
-                        ? "border-primary bg-primary text-primary-foreground"
+                    className={cn(
+                      "group relative flex h-12 flex-col items-center justify-center rounded-xl border-2 px-4 text-sm font-bold transition-all",
+                      isSelected
+                        ? "border-foreground bg-foreground text-background shadow-lg shadow-black/10 scale-105"
                         : outOfStock
-                          ? "cursor-not-allowed border-border text-muted-foreground opacity-40"
-                          : "border-border text-foreground hover:border-primary"
-                    }`}
+                          ? "cursor-not-allowed border-border/50 text-muted-foreground opacity-40"
+                          : "border-border/50 text-foreground hover:border-foreground hover:scale-105"
+                    )}
                   >
-                    {s.size}
-                    {!isPreorder && (
-                      <span className="ml-1 text-[10px] opacity-60">
-                        ({s.stock})
+                    <span className="uppercase">{s.size}</span>
+                    {!isPreorder && s.stock > 0 && (
+                      <span className={cn(
+                        "text-[10px] opacity-60",
+                        isSelected ? "text-background" : "text-muted-foreground"
+                      )}>
+                        {s.stock}u.
                       </span>
                     )}
                   </button>
@@ -269,73 +272,86 @@ export function ProductDetailClient({
               })}
             </div>
             {isPlayerType && (
-              <div className="mt-3 flex items-start gap-2 rounded-md bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>
-                  Tip de GoalWear: Las camisetas tipo &quot;player&quot; tienen un corte más ajustado al cuerpo.
-                  Si prefieres un ajuste más cómodo o estás entre dos tallas, te recomendamos
-                  elegir una talla más grande de la que usas regularmente.
-                </p>
+              <div className="mt-4 flex items-start gap-3 rounded-xl bg-muted/30 p-4 text-sm border border-border/50">
+                <div className="rounded-full bg-foreground/10 p-2">
+                  <Lightbulb className="h-4 w-4" />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-bold uppercase tracking-tight">Tip de GoalWear</p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Las camisetas tipo &quot;player&quot; tienen un corte mas ajustado al cuerpo.
+                    Si prefieres un ajuste mas comodo o estas entre dos tallas, te recomendamos
+                    elegir una talla mas grande de la que usas regularmente.
+                  </p>
+                </div>
               </div>
             )}
           </div>
         )}
 
-        {/* Custom Size for Accessories */}
         {isAccessory && (
-          <div className="mt-6">
-            <Label htmlFor="custom-size" className="text-sm font-semibold text-foreground">
-              Especificar Talla o Tamaño
+          <div className="mt-8">
+            <Label htmlFor="custom-size" className="text-xs font-bold uppercase tracking-widest text-foreground">
+              Especificar Talla o Tamano
             </Label>
             <Input
               id="custom-size"
-              placeholder="Ej: M, Única, Ajustable..."
+              placeholder="Ej: M, Unica, Ajustable..."
               value={selectedSize}
               onChange={(e) => setSelectedSize(e.target.value)}
-              className="mt-2"
+              className="mt-3 h-12 rounded-xl border-border/50 bg-background font-medium focus:border-foreground transition-all"
             />
           </div>
         )}
 
-        {/* Customization for preorder */}
         {isPreorder && (
-          <div className="mt-6 space-y-4 rounded-lg border border-border p-4">
-            <h3 className="text-sm font-semibold text-foreground">
-              Personalizacion
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="custom-name" className="text-xs text-muted-foreground">
-                  Nombre (opcional)
+          <div className="mt-8 space-y-4 rounded-2xl border border-border/50 bg-muted/20 p-6">
+            <div className="flex items-center gap-2">
+              <div className="h-1 w-8 bg-foreground rounded-full" />
+              <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
+                Configura tu Camiseta
+              </h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="custom-name" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Nombre en Dorsal
                 </Label>
                 <Input
                   id="custom-name"
-                  placeholder="Ej: MESSI"
+                  placeholder="EJ: CR7"
                   value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  className="mt-1"
+                  onChange={(e) => setCustomName(e.target.value.toUpperCase())}
+                  className="h-12 rounded-xl border-border/50 bg-background font-bold uppercase focus:border-foreground transition-all"
                 />
               </div>
-              <div>
-                <Label htmlFor="custom-number" className="text-xs text-muted-foreground">
-                  Numero (opcional)
+              <div className="space-y-2">
+                <Label htmlFor="custom-number" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Numero
                 </Label>
                 <Input
                   id="custom-number"
-                  placeholder="Ej: 10"
+                  placeholder="EJ: 7"
+                  maxLength={3}
                   value={customNumber}
                   onChange={(e) => setCustomNumber(e.target.value)}
-                  className="mt-1"
+                  className="h-12 rounded-xl border-border/50 bg-background font-bold focus:border-foreground transition-all"
                 />
               </div>
             </div>
 
             {patches.length > 0 && (
-              <div>
-                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Selecciona tus Parches (Máx. 2)
-                </Label>
-                <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    Selecciona Parches (MAX 2)
+                  </Label>
+                  <Badge variant="outline" className="text-[10px] font-bold">
+                    {selectedPatches.length}/2
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
                   {patches.map((patch) => {
                     const isSelected = selectedPatches.includes(patch.name)
                     return (
@@ -344,10 +360,10 @@ export function ProductDetailClient({
                         type="button"
                         onClick={() => togglePatch(patch.name)}
                         className={cn(
-                          "relative aspect-square overflow-hidden rounded-lg border-2 p-1 transition-all",
+                          "relative aspect-square overflow-hidden rounded-xl border-2 p-2 transition-all",
                           isSelected 
-                            ? "border-primary bg-primary/5 ring-2 ring-primary/20" 
-                            : "border-border hover:border-muted-foreground/50"
+                            ? "border-foreground bg-background scale-110 shadow-lg shadow-black/10 z-10" 
+                            : "border-border/50 hover:border-foreground/50 hover:scale-105"
                         )}
                       >
                         {patch.image_url ? (
@@ -357,12 +373,12 @@ export function ProductDetailClient({
                             className="h-full w-full object-contain"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-center font-medium leading-tight">
+                          <div className="flex h-full w-full items-center justify-center text-[10px] text-center font-bold leading-tight uppercase">
                             {patch.name}
                           </div>
                         )}
                         {isSelected && (
-                          <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5">
+                          <div className="absolute -top-1 -right-1 bg-foreground text-background rounded-full p-1 shadow-lg">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                           </div>
                         )}
@@ -370,62 +386,53 @@ export function ProductDetailClient({
                     )
                   })}
                 </div>
-                {selectedPatches.length > 0 && (
-                  <p className="mt-2 text-[11px] text-muted-foreground">
-                    Seleccionados: <span className="font-medium text-foreground">{selectedPatches.join(", ")}</span>
-                  </p>
-                )}
               </div>
             )}
           </div>
         )}
 
-        {/* Quantity + Add to Cart */}
-        <div className="mt-6 flex flex-col gap-3">
+        <div className="mt-8 flex flex-col gap-4">
           {!isPreorder && !isAccessory && selectedSize && (
-            <p className={cn(
-              "text-xs font-medium",
-              availableStock < 5 ? "text-destructive" : "text-muted-foreground"
-            )}>
+            <p className="text-xs font-medium text-muted-foreground">
               {availableStock > 0 
                 ? `Disponibles: ${availableStock} unidades` 
                 : "Sin stock disponible"}
             </p>
           )}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center rounded-md border border-border">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center rounded-xl border border-border/50 bg-muted/20 px-2">
               <button
                 type="button"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="flex h-10 w-10 items-center justify-center text-foreground transition-colors hover:bg-accent"
+                className="flex h-12 w-12 items-center justify-center text-xl font-bold transition-all hover:bg-background rounded-xl active:scale-90"
               >
                 -
               </button>
-              <span className="flex h-10 w-10 items-center justify-center text-sm font-medium text-foreground">
-                {quantity}
+              <span className="flex w-12 items-center justify-center text-lg font-black font-mono">
+                {quantity.toString().padStart(2, "0")}
               </span>
               <button
                 type="button"
                 disabled={!isPreorder && !isAccessory && quantity >= availableStock}
                 onClick={() => setQuantity(quantity + 1)}
-                className="flex h-10 w-10 items-center justify-center text-foreground transition-colors hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex h-12 w-12 items-center justify-center text-xl font-bold transition-all hover:bg-background rounded-xl disabled:opacity-20 active:scale-90"
               >
                 +
               </button>
             </div>
 
             <Button
-              className="flex-1"
+              className="flex-1 h-12 rounded-full text-sm font-bold uppercase tracking-widest shadow-lg shadow-black/5 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
               size="lg"
               disabled={!canAdd || isValidating}
               onClick={handleAddToCart}
             >
               {isValidating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
-                <ShoppingCart className="mr-2 h-4 w-4" />
+                <ShoppingCart className="mr-2 h-5 w-5" />
               )}
-              {isOutOfStock ? "Agotado" : isValidating ? "Validando..." : "Agregar al Carrito"}
+              {isOutOfStock ? "Agotado" : isValidating ? "Validando..." : "Agregar a mi Orden"}
             </Button>
           </div>
         </div>

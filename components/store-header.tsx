@@ -19,11 +19,11 @@ export function StoreHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link href="/" className="mr-4 flex items-center gap-2 shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary md:h-9 md:w-9">
-            <span className="text-[10px] font-bold text-primary-foreground md:text-sm">GW</span>
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:py-4">
+        <Link href="/" className="mr-4 flex items-center gap-2.5 shrink-0 group">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground transition-transform duration-300 group-hover:scale-105 md:h-10 md:w-10">
+            <span className="text-xs font-bold text-background md:text-sm">GW</span>
           </div>
           <span className="hidden text-lg font-bold text-foreground sm:block">GoalWear</span>
         </Link>
@@ -33,7 +33,7 @@ export function StoreHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground whitespace-nowrap"
+              className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-foreground hover:text-background whitespace-nowrap"
             >
               {link.label}
             </Link>
@@ -46,13 +46,13 @@ export function StoreHeader() {
             <Button
               variant="outline"
               size="icon"
-              className="relative h-9 w-9 bg-transparent"
+              className="relative h-10 w-10 rounded-full border-border/50 bg-transparent transition-all duration-300 hover:bg-foreground hover:text-background hover:border-foreground"
               onClick={() => setIsOpen(true)}
               aria-label="Abrir carrito"
             >
               <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
               {totalItems > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground md:h-5 md:w-5 md:text-[11px]">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[10px] font-bold text-background animate-in zoom-in duration-200">
                   {totalItems}
                 </span>
               )}
@@ -60,30 +60,30 @@ export function StoreHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 lg:hidden"
+              className="h-10 w-10 rounded-full transition-all duration-300 hover:bg-foreground hover:text-background lg:hidden"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Menu"
             >
-              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
       </div>
 
-      {menuOpen && (
-        <div className="border-t border-border bg-card px-4 py-2 lg:hidden">
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out lg:hidden ${menuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl px-4 py-2">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="block rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="block rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-foreground hover:text-background"
               onClick={() => setMenuOpen(false)}
             >
               {link.label}
             </Link>
           ))}
         </div>
-      )}
+      </div>
     </header>
   )
 }
