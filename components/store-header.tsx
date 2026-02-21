@@ -4,8 +4,9 @@ import Link from "next/link"
 import { ShoppingCart, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { ProductSearch } from "./product-search"
+import { ThemeToggle } from "./theme-toggle"
 
 const NAV_LINKS = [
   { href: "/", label: "Inicio" },
@@ -41,8 +42,11 @@ export function StoreHeader() {
         </nav>
 
         <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
-          <ProductSearch />
+          <Suspense fallback={<div className="h-10 w-full md:max-w-[300px]" />}>
+            <ProductSearch />
+          </Suspense>
           <div className="flex items-center gap-1 md:gap-2">
+            <ThemeToggle />
             <Button
               variant="outline"
               size="icon"
