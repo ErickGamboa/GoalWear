@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
-import { ProductCard } from "@/components/product-card"
+import { AnimatedProductGrid } from "@/components/animated-product-grid"
+import { AnimatedHero } from "@/components/animated-hero"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
-import type { Product } from "@/lib/types"
 
 async function getFeaturedProducts(query?: string) {
   const supabase = await createClient()
@@ -64,34 +64,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      {!isSearching && (
-        <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-background px-4 py-24 md:py-32">
-          <div className="text-center">
-            <h1 className="animate-in fade-in slide-in-from-bottom-8 duration-700 text-[12vw] font-black uppercase tracking-tight text-foreground leading-none md:text-[10vw] lg:text-[8vw]">
-              GOALWEAR
-            </h1>
-            <p className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 mt-6 max-w-md mx-auto text-balance text-base text-muted-foreground md:text-lg">
-              Las mejores camisetas de futbol. Entrega inmediata y personalizacion premium.
-            </p>
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 mt-10 flex flex-wrap items-center justify-center gap-3">
-              <Button asChild size="lg" className="rounded-full h-12 px-8 font-bold uppercase tracking-widest transition-all duration-300 hover:scale-105 active:scale-95">
-                <Link href="/catalogo/entrega-inmediata">
-                  Ver Catalogo
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="rounded-full h-12 px-8 font-bold uppercase tracking-widest transition-all duration-300 hover:bg-foreground hover:text-background hover:scale-105 active:scale-95"
-              >
-                <Link href="/catalogo/pedido-previo">Personalizar</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-      )}
+      {!isSearching && <AnimatedHero />}
 
       <div className="mx-auto max-w-7xl px-4 py-12 md:py-16">
         {isSearching && (
@@ -147,7 +120,7 @@ function CategorySection({
   if (isSearching && products.length === 0) return null
 
   return (
-    <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 mb-16 last:mb-0">
+    <section className="mb-16 last:mb-0">
       <div className="mb-8 flex items-end justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground md:text-3xl">{title}</h2>
@@ -164,11 +137,7 @@ function CategorySection({
       </div>
 
       {products.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4 md:gap-6 md:grid-cols-4 overflow-hidden">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <AnimatedProductGrid products={products} />
       ) : (
         <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-border/50 bg-muted/20">
           <p className="text-sm text-muted-foreground">
