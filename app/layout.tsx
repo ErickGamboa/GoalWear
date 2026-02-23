@@ -9,8 +9,11 @@ import './globals.css'
 const _inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'GoalWear - Camisetas Deportivas',
+  title: 'GoalWearCR',
   description: 'Tu tienda de camisetas deportivas. Entrega inmediata, pedidos personalizados y accesorios.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
