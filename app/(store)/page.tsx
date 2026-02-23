@@ -94,7 +94,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
         <CategorySection
           title="Accesorios"
-          description="Gorras, bufandas, guantes y mas."
+          description="Jerseys, abrigos, gorras , calzado y más"
           href="/catalogo/accesorios"
           products={accessories}
           isSearching={isSearching}

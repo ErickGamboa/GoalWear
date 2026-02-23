@@ -33,7 +33,7 @@ export function AnimatedHero() {
             transitionDelay: "200ms",
           }}
         >
-          Las mejores camisetas de futbol. Entrega inmediata y personalizacion premium.
+          Encuentra los mejores jerseys deportivos en un solo lugar, con stock inmediato o pedidos especiales.
         </p>
         <div 
           className="mt-10 flex flex-wrap items-center justify-center gap-3 transition-all duration-700 ease-out"
