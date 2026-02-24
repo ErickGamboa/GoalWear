@@ -26,7 +26,7 @@ export function StoreHeader() {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground transition-transform duration-300 group-hover:scale-105 md:h-10 md:w-10">
             <span className="text-xs font-bold text-background md:text-sm">GW</span>
           </div>
-          <span className="hidden text-lg font-bold text-foreground sm:block">GoalWear</span>
+          <span className="hidden text-lg font-bold text-foreground sm:block">GOΛLWEΛR</span>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">

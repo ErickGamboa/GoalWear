@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import { CheckoutForm } from "./checkout-form"
 
 export const metadata: Metadata = {
-  title: "Checkout | GoalWear",
-  description: "Finaliza tu pedido - GoalWear",
+  title: "Checkout | GOΛLWEΛR",
+  description: "Finaliza tu pedido - GOΛLWEΛR",
 }
 
 export default function CheckoutPage() {

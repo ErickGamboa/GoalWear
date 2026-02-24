@@ -277,7 +277,7 @@ export function ProductDetailClient({
                   <Lightbulb className="h-4 w-4" />
                 </div>
                 <div className="space-y-1">
-                  <p className="font-bold uppercase tracking-tight">Tip de GoalWear</p>
+                  <p className="font-bold uppercase tracking-tight">Tip de GOΛLWEΛR</p>
                   <p className="text-xs leading-relaxed text-muted-foreground">
                     Las camisetas tipo &quot;player&quot; tienen un corte mas ajustado al cuerpo.
                     Si prefieres un ajuste mas comodo o estas entre dos tallas, te recomendamos

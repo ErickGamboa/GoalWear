@@ -6,10 +6,10 @@ import { CartProvider } from '@/lib/cart-context'
 
 import './globals.css'
 
-const _inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'GoalWearCR',
+  title: 'GOΛLWEΛRCR',
   description: 'Tu tienda de camisetas deportivas. Entrega inmediata, pedidos personalizados y accesorios.',
   icons: {
     icon: '/favicon.svg',
@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="font-sans antialiased">
+      <body className={`${inter.className} antialiased`}>
         <CartProvider>
           {children}
           <Toaster position="bottom-right" />

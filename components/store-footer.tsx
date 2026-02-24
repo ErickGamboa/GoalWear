@@ -9,7 +9,7 @@ export function StoreFooter() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground transition-transform duration-300 group-hover:scale-105">
               <span className="text-xs font-bold text-background">GW</span>
             </div>
-            <span className="text-base font-bold text-foreground">GoalWear</span>
+            <span className="text-base font-bold text-foreground">GOΛLWEΛR</span>
           </Link>
           <nav className="flex flex-wrap justify-center gap-6 md:gap-8">
             <Link
@@ -32,7 +32,7 @@ export function StoreFooter() {
             </Link>
           </nav>
           <p className="text-xs text-muted-foreground">
-            GoalWear {new Date().getFullYear()}
+            GOΛLWEΛR {new Date().getFullYear()}
           </p>
         </div>
       </div>

@@ -1,9 +1,12 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
+import { Inter } from "next/font/google"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+
+const inter = Inter({ subsets: ['latin'], weight: ['900'] })
 
 export function AnimatedHero() {
   const [isVisible, setIsVisible] = useState(false)
@@ -17,13 +20,13 @@ export function AnimatedHero() {
     <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-background px-4 py-24 md:py-32">
       <div className="text-center">
         <h1 
-          className="text-[12vw] font-black uppercase tracking-tight text-foreground leading-none md:text-[10vw] lg:text-[8vw] transition-all duration-1000 ease-out"
+          className={`${inter.className} text-[12vw] uppercase tracking-tighter text-foreground leading-none md:text-[10vw] lg:text-[8vw] transition-all duration-1000 ease-out`}
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? "translateY(0) scale(1)" : "translateY(60px) scale(0.9)",
           }}
         >
-          GOALWEAR
+          GOΛLWEΛR
         </h1>
         <p 
           className="mt-6 max-w-md mx-auto text-balance text-base text-muted-foreground md:text-lg transition-all duration-700 ease-out"
