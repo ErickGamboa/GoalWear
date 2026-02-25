@@ -22,6 +22,7 @@ export function CheckoutForm() {
   const [loading, setLoading] = useState(false)
 
   const [needsShipping, setNeedsShipping] = useState(false)
+  const [shippingType, setShippingType] = useState<"delivery" | "local" | null>(null)
   const SHIPPING_COST = 3500
 
   const [formData, setFormData] = useState({
@@ -32,7 +33,7 @@ export function CheckoutForm() {
     notes: "",
   })
 
-  const finalTotal = totalPrice + (needsShipping ? SHIPPING_COST : 0)
+  const finalTotal = totalPrice + (shippingType === "delivery" ? SHIPPING_COST : 0)
 
   function updateField(field: string, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -50,7 +51,7 @@ export function CheckoutForm() {
         body: JSON.stringify({
           customer: {
             ...formData,
-            needsShipping,
+            shippingType: shippingType,
           },
           items: items.map((item) => ({
             productId: item.productId,
@@ -64,7 +65,8 @@ export function CheckoutForm() {
             unitPrice: item.unitPrice,
             category: item.category,
           })),
-          shippingCost: needsShipping ? SHIPPING_COST : 0,
+          shippingCost: shippingType === "delivery" ? SHIPPING_COST : 0,
+          shippingType: shippingType,
         }),
       })
 
@@ -129,10 +131,16 @@ export function CheckoutForm() {
           ))}
         </div>
         <Separator className="my-4" />
-        {needsShipping && (
+        {shippingType === "delivery" && (
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Envio</span>
+            <span>Envio a domicilio</span>
             <span className="font-medium">{formatCurrency(SHIPPING_COST)}</span>
+          </div>
+        )}
+        {shippingType === "local" && (
+          <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
+            <span>Envio gratis (Ciudad Quesada)</span>
+            <span className="font-medium">GRATIS</span>
           </div>
         )}
         <div className="mt-2 flex items-center justify-between text-xl font-black text-foreground">
@@ -183,17 +191,48 @@ export function CheckoutForm() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border/50 p-4 transition-colors hover:border-border">
-          <label className="flex items-start gap-3 cursor-pointer">
+        <div className="space-y-3">
+          <label className="flex items-start gap-3 cursor-pointer p-4 rounded-2xl border border-border/50 transition-colors hover:border-border bg-muted/10">
             <Checkbox
-              id="needsShipping"
-              checked={needsShipping}
-              onCheckedChange={(checked) => setNeedsShipping(checked as boolean)}
+              checked={shippingType === null}
+              onCheckedChange={() => setShippingType(null)}
               className="mt-1"
             />
-            <div className="space-y-1 leading-none">
+            <div className="space-y-1">
               <span className="text-sm font-bold text-foreground">
-                Requiero envio a domicilio
+                Retiro en tienda
+              </span>
+              <p className="text-xs text-muted-foreground">
+                Sin costo adicional
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer p-4 rounded-2xl border border-border/50 transition-colors hover:border-border bg-muted/10">
+            <Checkbox
+              checked={shippingType === "local"}
+              onCheckedChange={(checked) => setShippingType(checked ? "local" : null)}
+              className="mt-1"
+            />
+            <div className="space-y-1">
+              <span className="text-sm font-bold text-foreground">
+                Envio gratis - Alrededores de Ciudad Quesada - San Carlos
+              </span>
+              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                SIN COSTO
+              </p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer p-4 rounded-2xl border border-border/50 transition-colors hover:border-border bg-muted/10">
+            <Checkbox
+              checked={shippingType === "delivery"}
+              onCheckedChange={(checked) => setShippingType(checked ? "delivery" : null)}
+              className="mt-1"
+            />
+            <div className="space-y-1">
+              <span className="text-sm font-bold text-foreground">
+                Envio a domicilio (otros sectores)
               </span>
               <p className="text-xs text-muted-foreground">
                 Costo adicional de {formatCurrency(SHIPPING_COST)}
@@ -201,12 +240,12 @@ export function CheckoutForm() {
             </div>
           </label>
 
-          {needsShipping && (
-            <div className="mt-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          {(shippingType === "delivery" || shippingType === "local") && (
+            <div className="mt-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300 pl-4">
               <Label htmlFor="address" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Direccion de envio *</Label>
               <Input
                 id="address"
-                required={needsShipping}
+                required
                 value={formData.address}
                 onChange={(e) => updateField("address", e.target.value)}
                 placeholder="Calle, numero, ciudad, provincia"
