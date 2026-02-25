@@ -12,6 +12,11 @@ import type { ProductWithSizes, Patch } from "@/lib/types"
 import { ShoppingCart, Loader2, Lightbulb } from "lucide-react"
 import { toast } from "sonner"
 import { formatCurrency, cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export function ProductDetailClient({
   product,
@@ -30,6 +35,7 @@ export function ProductDetailClient({
   const [activeImage, setActiveImage] = useState(product.image_url)
   const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ display: 'none' })
   const [isValidating, setIsValidating] = useState(false)
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
@@ -288,6 +294,20 @@ export function ProductDetailClient({
                 </div>
               </div>
             )}
+            <Dialog open={sizeGuideOpen} onOpenChange={setSizeGuideOpen}>
+              <DialogTrigger asChild>
+                <Button variant="link" className="mt-3 h-auto p-0 text-xs font-bold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+                  Guia de Tallas
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl w-auto p-0 bg-transparent border-none">
+                <img 
+                  src={isKids ? "/tallas-ninos.jpeg" : "/tallas-hombre.jpeg"} 
+                  alt={isKids ? "Guía de tallas niños" : "Guía de tallas hombre"}
+                  className="w-full h-auto rounded-2xl"
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         )}
 
