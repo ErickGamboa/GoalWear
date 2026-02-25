@@ -42,11 +42,13 @@ export function ProductDetailClient({
   const isPreorder = product.category === "preorder"
   const isAccessory = product.category === "accessory"
   const isPlayerType = product.name.toLowerCase().includes("player")
+  const isKids = product.name.toLowerCase().includes("niñ")
 
-  const JERSEY_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
+  const ADULT_SIZES = ["S", "M", "L", "XL", "2XL"]
+  const KIDS_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"]
   
   const displaySizes = isPreorder 
-    ? JERSEY_SIZES.map(size => ({ 
+    ? (isKids ? KIDS_SIZES : ADULT_SIZES).map(size => ({ 
         id: size, 
         size: size, 
         stock: 999 
