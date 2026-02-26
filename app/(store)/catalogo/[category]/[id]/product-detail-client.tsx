@@ -50,8 +50,25 @@ export function ProductDetailClient({
   const isPlayerType = product.name.toLowerCase().includes("player")
   const isKids = product.name.toLowerCase().includes("niñ")
 
-  const ADULT_SIZES = ["S", "M", "L", "XL", "2XL"]
+  const ADULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"]
   const KIDS_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"]
+
+  const KIDS_SIZE_DISPLAY: Record<string, string> = {
+    XXS: "XXS = 16",
+    XS: "XS = 18",
+    S: "S = 20",
+    M: "M = 22",
+    L: "L = 24",
+    XL: "XL = 26",
+    XXL: "XXL = 28",
+  }
+
+  const formatSize = (size: string) => {
+    if (isKids && KIDS_SIZE_DISPLAY[size]) {
+      return KIDS_SIZE_DISPLAY[size]
+    }
+    return size
+  }
   
   const displaySizes = isPreorder 
     ? (isKids ? KIDS_SIZES : ADULT_SIZES).map(size => ({ 
@@ -266,7 +283,7 @@ export function ProductDetailClient({
                           : "border-border/50 text-foreground hover:border-foreground hover:scale-105"
                     )}
                   >
-                    <span className="uppercase">{s.size}</span>
+                    <span className="uppercase">{formatSize(s.size)}</span>
                     {!isPreorder && s.stock > 0 && (
                       <span className={cn(
                         "text-[10px] opacity-60",

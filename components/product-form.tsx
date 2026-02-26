@@ -21,8 +21,18 @@ import { Loader2, Plus, X } from "lucide-react"
 import { toast } from "sonner"
 import type { ProductWithSizes } from "@/lib/types"
 
-const ADULT_SIZES = ["S", "M", "L", "XL", "2XL"]
+const ADULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"]
 const KIDS_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"]
+
+const KIDS_SIZE_DISPLAY: Record<string, string> = {
+  XXS: "XXS = 16",
+  XS: "XS = 18",
+  S: "S = 20",
+  M: "M = 22",
+  L: "L = 24",
+  XL: "XL = 26",
+  XXL: "XXL = 28",
+}
 
 type Props = {
   product?: ProductWithSizes
@@ -54,6 +64,13 @@ export function ProductForm({ product, mode }: Props) {
 
   const isKids = name.toLowerCase().includes("niñ")
   const availableSizes = isKids ? KIDS_SIZES : ADULT_SIZES
+
+  const formatSize = (size: string) => {
+    if (isKids && KIDS_SIZE_DISPLAY[size]) {
+      return KIDS_SIZE_DISPLAY[size]
+    }
+    return size
+  }
 
   function addSize() {
     const availableSize = availableSizes.find(
@@ -362,7 +379,7 @@ export function ProductForm({ product, mode }: Props) {
                     <SelectContent>
                       {availableSizes.map((size) => (
                         <SelectItem key={size} value={size}>
-                          {size}
+                          {formatSize(size)}
                         </SelectItem>
                       ))}
                     </SelectContent>

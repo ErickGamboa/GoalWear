@@ -35,6 +35,24 @@ export function CheckoutForm() {
 
   const finalTotal = totalPrice + (shippingType === "delivery" ? SHIPPING_COST : 0)
 
+  const KIDS_SIZE_DISPLAY: Record<string, string> = {
+    XXS: "XXS = 16",
+    XS: "XS = 18",
+    S: "S = 20",
+    M: "M = 22",
+    L: "L = 24",
+    XL: "XL = 26",
+    XXL: "XXL = 28",
+  }
+
+  const formatSize = (productName: string, size: string) => {
+    const isKids = productName.toLowerCase().includes("niñ")
+    if (isKids && KIDS_SIZE_DISPLAY[size]) {
+      return KIDS_SIZE_DISPLAY[size]
+    }
+    return size
+  }
+
   function updateField(field: string, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
@@ -117,7 +135,7 @@ export function CheckoutForm() {
               <div className="flex-1">
                 <p className="font-semibold text-foreground">
                   {item.productName}
-                  {item.size && ` (${item.size})`}
+                  {item.size && ` (${formatSize(item.productName, item.size)})`}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {item.productCode} x{item.quantity}

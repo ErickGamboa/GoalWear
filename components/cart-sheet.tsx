@@ -17,6 +17,24 @@ export function CartSheet() {
     useCart()
   const [isValidating, setIsValidating] = useState(false)
 
+  const KIDS_SIZE_DISPLAY: Record<string, string> = {
+    XXS: "XXS = 16",
+    XS: "XS = 18",
+    S: "S = 20",
+    M: "M = 22",
+    L: "L = 24",
+    XL: "XL = 26",
+    XXL: "XXL = 28",
+  }
+
+  const formatSize = (productName: string, size: string) => {
+    const isKids = productName.toLowerCase().includes("niñ")
+    if (isKids && KIDS_SIZE_DISPLAY[size]) {
+      return KIDS_SIZE_DISPLAY[size]
+    }
+    return size
+  }
+
   const handleCheckout = async () => {
     setIsValidating(true)
     try {
@@ -36,7 +54,7 @@ export function CartSheet() {
           if (error) throw error
 
           if (!data || data.stock < item.quantity) {
-            toast.error(`Stock insuficiente para ${item.productName} (${item.size}). Disponibles: ${data?.stock || 0}`)
+            toast.error(`Stock insuficiente para ${item.productName} (${formatSize(item.productName, item.size)}). Disponibles: ${data?.stock || 0}`)
             setIsValidating(false)
             return
           }
@@ -94,7 +112,7 @@ export function CartSheet() {
                         {item.productName}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {item.productCode} {item.size && `| Talla: ${item.size}`}
+                        {item.productCode} {item.size && `| Talla: ${formatSize(item.productName, item.size)}`}
                       </p>
                       {item.customName && (
                         <p className="text-xs text-muted-foreground">

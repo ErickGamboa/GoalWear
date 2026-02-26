@@ -45,6 +45,24 @@ export default async function OrderDetailPage({ params }: Props) {
   const preorderItems = typedOrder.order_items.filter((item: any) => item.category === "preorder")
   const otherItems = typedOrder.order_items.filter((item: any) => item.category !== "preorder")
 
+  const KIDS_SIZE_DISPLAY: Record<string, string> = {
+    XXS: "XXS = 16",
+    XS: "XS = 18",
+    S: "S = 20",
+    M: "M = 22",
+    L: "L = 24",
+    XL: "XL = 26",
+    XXL: "XXL = 28",
+  }
+
+  function formatSize(productName: string, size: string) {
+    const isKids = productName.toLowerCase().includes("niñ")
+    if (isKids && KIDS_SIZE_DISPLAY[size]) {
+      return KIDS_SIZE_DISPLAY[size]
+    }
+    return size
+  }
+
   return (
     <div>
       <div className="mb-6 flex items-center gap-4">
@@ -228,7 +246,7 @@ export default async function OrderDetailPage({ params }: Props) {
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground w-20">Size:</span>
                               <Badge variant="outline" className="text-sm font-bold px-3">
-                                {item.size}
+                                {formatSize(item.product_name, item.size)}
                               </Badge>
                             </div>
                             <div className="flex items-center gap-2">
@@ -281,7 +299,7 @@ export default async function OrderDetailPage({ params }: Props) {
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {item.product_code}
-                      {item.size && ` | Talla: ${item.size}`}
+                      {item.size && ` | Talla: ${formatSize(item.product_name, item.size)}`}
                       {" | x"}
                       {item.quantity}
                     </p>

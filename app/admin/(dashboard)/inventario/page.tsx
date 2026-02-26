@@ -40,6 +40,24 @@ export default function InventoryPage() {
 
   const supabase = createClient()
 
+  const KIDS_SIZE_DISPLAY: Record<string, string> = {
+    XXS: "XXS = 16",
+    XS: "XS = 18",
+    S: "S = 20",
+    M: "M = 22",
+    L: "L = 24",
+    XL: "XL = 26",
+    XXL: "XXL = 28",
+  }
+
+  const formatSize = (productName: string, size: string) => {
+    const isKids = productName.toLowerCase().includes("niñ")
+    if (isKids && KIDS_SIZE_DISPLAY[size]) {
+      return KIDS_SIZE_DISPLAY[size]
+    }
+    return size
+  }
+
   const fetchInventory = async () => {
     setLoading(true)
     try {
@@ -164,7 +182,7 @@ export default function InventoryPage() {
                     <SelectContent>
                       {currentProductData?.product_sizes.map((s: any) => (
                         <SelectItem key={s.id} value={s.size}>
-                          {s.size} (Stock: {s.stock})
+                          {formatSize(currentProductData.name, s.size)} (Stock: {s.stock})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -250,7 +268,7 @@ export default function InventoryPage() {
                             </TableCell>
                           )}
                           <TableCell className="text-center">
-                            <Badge variant="outline" className="w-12 justify-center">{s.size}</Badge>
+                            <Badge variant="outline" className="w-12 justify-center">{formatSize(product.name, s.size)}</Badge>
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={cn(
