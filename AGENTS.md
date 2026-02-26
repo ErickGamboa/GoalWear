@@ -18,7 +18,7 @@ npm run start
 npm run lint
 ```
 
-**Note**: No test framework is configured. To add tests, use Vitest with React Testing Library.
+**Note**: No test framework configured. To add tests, use Vitest with React Testing Library.
 
 ## Project Overview
 
@@ -34,9 +34,9 @@ npm run lint
 ## Design System
 
 - **Theme**: Monochrome black & white palette
-- **CSS Variables**: Defined in `app/globals.css` - use semantic tokens (`foreground`, `background`, `muted`, etc.)
+- **CSS Variables**: Defined in `app/globals.css` - use semantic tokens (`foreground`, `background`, `muted`)
 - **Transitions**: Modern, smooth animations (300-700ms with ease-out)
-- **Border Radius**: Consistent rounded corners (use `rounded-xl`, `rounded-2xl`, `rounded-full`)
+- **Border Radius**: Use `rounded-xl`, `rounded-2xl`, `rounded-full`
 
 ## Code Style Guidelines
 
@@ -92,22 +92,12 @@ Button.displayName = "Button"
 1. Use `cn()` utility from `@/lib/utils` for conditional classes
 2. Order: Layout → Spacing → Sizing → Typography → Colors → Effects → Transitions
 3. Responsive: Mobile-first (default) → `md:` → `lg:`
-4. Transitions: Always specify duration (e.g., `duration-300`, `duration-500`)
-
-```tsx
-className={cn(
-  "flex items-center gap-2 rounded-xl px-4 py-2",
-  "text-sm font-medium text-foreground",
-  "transition-all duration-300",
-  "hover:bg-foreground hover:text-background",
-  className
-)}
-```
+4. Always specify transition duration (e.g., `duration-300`)
 
 ### TypeScript
 
 1. **Strict mode enabled** - avoid `any` types
-2. **Null checks**: Always handle `null`/`undefined` from Supabase with `?? []` or `?? null`
+2. **Null checks**: Handle `null`/`undefined` from Supabase with `?? []` or `?? null`
 3. **Type imports**: Use `import type { ... }` for type-only imports
 4. **Type definitions**: Centralized in `lib/types.ts`
 
@@ -120,86 +110,54 @@ return (data ?? []) as Product[]
 
 ### Error Handling
 
-1. **Server Components**: Check for errors, log them, return null or empty arrays
-2. **Client Components**: Use try/catch with `toast()` from sonner for user feedback
+1. **Server Components**: Check errors, log them, return null or empty arrays
+2. **Client Components**: Use try/catch with `toast()` from sonner
 3. **Forms**: Use Zod schemas with React Hook Form's resolver
-
-```typescript
-// Client component with toast
-try {
-  await someAsyncOperation()
-  toast.success("Operation successful")
-} catch (err) {
-  toast.error("Operation failed")
-}
-```
 
 ### Supabase Patterns
 
 | Context | Import | Usage |
 |---------|--------|-------|
-| Client (browser) | `@/lib/supabase/client` | `createClient()` - synchronous |
-| Server (SSR) | `@/lib/supabase/server` | `await createClient()` - async |
-
-```typescript
-// Client component
-import { createClient } from "@/lib/supabase/client"
-const supabase = createClient()
-
-// Server component
-import { createClient } from "@/lib/supabase/server"
-const supabase = await createClient()
-```
+| Client | `@/lib/supabase/client` | `createClient()` - synchronous |
+| Server | `@/lib/supabase/server` | `await createClient()` - async |
 
 ### Form Handling
 
 1. Define Zod schema for validation
 2. Use `useForm` with `zodResolver`
-3. Use shadcn/ui Form components for consistent styling
-
-```typescript
-const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
-})
-
-const form = useForm<z.infer<typeof formSchema>>({
-  resolver: zodResolver(formSchema),
-})
-```
+3. Use shadcn/ui Form components
 
 ## File Organization
 
 ```
 app/
-  (store)/              # Public store routes (customers)
-    catalogo/           # Product catalog
-    checkout/           # Checkout flow
-    layout.tsx          # Store layout wrapper
-  admin/                # Admin dashboard routes
-    (dashboard)/        # Protected admin pages
-    login/              # Admin authentication
-  api/                  # API routes
-  globals.css           # Global styles + CSS variables
-  layout.tsx            # Root layout
+  (store)/         # Public store routes
+    catalogo/      # Product catalog
+    checkout/      # Checkout flow
+  admin/          # Admin dashboard
+    (dashboard)/  # Protected admin pages
+    login/        # Admin authentication
+  api/            # API routes
 components/
-  ui/                   # shadcn/ui components (auto-generated)
-  [feature].tsx         # Feature components (e.g., product-card.tsx)
+  ui/             # shadcn/ui components
 lib/
-  utils.ts              # cn(), formatCurrency()
-  types.ts              # TypeScript type definitions
-  cart-context.tsx      # Shopping cart React Context
-  supabase/             # Supabase client configuration
-hooks/
-  use-[name].ts         # Custom React hooks
-public/                 # Static assets
-scripts/                # SQL migrations
+  utils.ts         # cn(), formatCurrency()
+  types.ts         # TypeScript definitions
+  cart-context.tsx # Shopping cart context
+  supabase/        # Supabase client config
+hooks/             # Custom React hooks
+public/            # Static assets
 ```
+
+## Size Handling
+
+- **Adult sizes**: S, M, L, XL, 2XL, 3XL, 4XL
+- **Kids sizes**: XXS (16), XS (18), S (20), M (22), L (24), XL (26), XXL (28)
+- Display format for kids: "XXS = 16", "XS = 18", etc. (UI only, DB stores as text)
 
 ## Important Notes
 
-- **Images**: Unoptimized in `next.config.mjs` for static export compatibility
+- **Images**: Unoptimized in `next.config.mjs` for static export
 - **Language**: UI text in Spanish, code/comments in English
 - **Environment**: Requires `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- **No ESLint config**: Uses Next.js defaults
-- **Build errors**: TypeScript errors are ignored during build (`ignoreBuildErrors: true`)
+- **Build errors**: TypeScript errors ignored during build (`ignoreBuildErrors: true`)
