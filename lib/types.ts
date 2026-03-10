@@ -1,3 +1,5 @@
+export type SportType = "soccer" | "basketball" | "football" | "formula1" | "baseball"
+
 export type Product = {
   id: string
   code: string
@@ -8,6 +10,7 @@ export type Product = {
   image_url_2: string | null
   image_url_3: string | null
   category: "immediate" | "preorder" | "accessory"
+  sport: SportType
   has_stock: boolean
   created_at: string
 }
@@ -29,6 +32,49 @@ export type Patch = {
 export type ProductWithSizes = Product & {
   product_sizes: ProductSize[]
 }
+
+export const SPORT_OPTIONS: { id: SportType; label: string; slug: string }[] = [
+  {
+    id: "soccer",
+    label: "Fútbol",
+    slug: "futbol",
+  },
+  {
+    id: "basketball",
+    label: "Basketball",
+    slug: "basketball",
+  },
+  {
+    id: "football",
+    label: "Football Americano",
+    slug: "football",
+  },
+  {
+    id: "formula1",
+    label: "Formula 1",
+    slug: "formula-1",
+  },
+  {
+    id: "baseball",
+    label: "Baseball",
+    slug: "baseball",
+  },
+]
+
+export const SPORT_SLUG_TO_ID: Record<string, SportType> = SPORT_OPTIONS.reduce((acc, option) => {
+  acc[option.slug] = option.id
+  return acc
+}, {} as Record<string, SportType>)
+
+export const SPORT_ID_TO_SLUG: Record<SportType, string> = SPORT_OPTIONS.reduce((acc, option) => {
+  acc[option.id] = option.slug
+  return acc
+}, {} as Record<SportType, string>)
+
+export const SPORT_LABELS: Record<SportType, string> = SPORT_OPTIONS.reduce((acc, option) => {
+  acc[option.id] = option.label
+  return acc
+}, {} as Record<SportType, string>)
 
 export type Order = {
   id: string

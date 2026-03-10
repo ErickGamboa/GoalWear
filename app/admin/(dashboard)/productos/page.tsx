@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table"
 import Link from "next/link"
 import { Plus } from "lucide-react"
-import { CATEGORY_LABELS } from "@/lib/types"
+import { CATEGORY_LABELS, SPORT_LABELS } from "@/lib/types"
 import type { Product } from "@/lib/types"
 import { DeleteProductButton } from "./delete-product-button"
 import { formatCurrency } from "@/lib/utils"
@@ -45,8 +45,9 @@ export default async function ProductsPage() {
                 <TableHead>Codigo</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Equipo</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead className="text-right">Precio</TableHead>
+                 <TableHead>Categoria</TableHead>
+                 <TableHead>Deporte</TableHead>
+                 <TableHead className="text-right">Precio</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -72,11 +73,16 @@ export default async function ProductsPage() {
                     <TableCell className="text-muted-foreground whitespace-nowrap">
                       {product.team || "-"}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <Badge variant="secondary" className="text-xs">
-                        {CATEGORY_LABELS[product.category]}
-                      </Badge>
-                    </TableCell>
+                     <TableCell className="whitespace-nowrap">
+                       <Badge variant="secondary" className="text-xs">
+                         {CATEGORY_LABELS[product.category]}
+                       </Badge>
+                     </TableCell>
+                     <TableCell className="whitespace-nowrap">
+                       <Badge variant="outline" className="text-xs">
+                         {SPORT_LABELS[product.sport]}
+                       </Badge>
+                     </TableCell>
                     <TableCell className="text-right font-medium whitespace-nowrap">
                       {formatCurrency(Number(product.price))}
                     </TableCell>

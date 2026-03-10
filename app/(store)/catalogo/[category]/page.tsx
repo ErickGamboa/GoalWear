@@ -1,13 +1,15 @@
-import { createClient } from "@/lib/supabase/server"
-import { ProductCard } from "@/components/product-card"
-import { SLUG_TO_CATEGORY, CATEGORY_LABELS } from "@/lib/types"
-import type { Product } from "@/lib/types"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import type { Metadata } from "next"
+
+import { CatalogSportFilter } from "@/components/catalog-sport-filter"
+import { ProductCard } from "@/components/product-card"
+import { createClient } from "@/lib/supabase/server"
+import { CATEGORY_LABELS, SLUG_TO_CATEGORY, SPORT_SLUG_TO_ID } from "@/lib/types"
+import type { Product } from "@/lib/types"
 
 type Props = {
   params: Promise<{ category: string }>
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; sport?: string }>
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -23,12 +25,26 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
 
 export default async function CatalogPage({ params, searchParams }: Props) {
   const { category: slug } = await params
-  const { q: query } = await searchParams
+  const { q: query, sport: sportSlug } = await searchParams
   const category = SLUG_TO_CATEGORY[slug]
   if (!category) notFound()
 
   const label = CATEGORY_LABELS[category]
   const supabase = await createClient()
+
+  const isSportFilterEnabled = category === "immediate" || category === "preorder"
+  if (isSportFilterEnabled && !sportSlug) {
+    const params = new URLSearchParams()
+    if (query) {
+      params.set("q", query)
+    }
+    params.set("sport", "futbol")
+    const search = params.toString()
+    redirect(`/catalogo/${slug}?${search}`)
+  }
+
+  const resolvedSport = sportSlug ? SPORT_SLUG_TO_ID[sportSlug] : undefined
+  const activeSport = isSportFilterEnabled ? (resolvedSport ?? "soccer") : null
 
   let dbQuery = supabase
     .from("products")
@@ -46,6 +62,16 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   const { data: products } = await dbQuery
 
   let productList = (products ?? []) as any[]
+
+  if (activeSport) {
+    productList = productList.filter((product) => {
+      const sportValue = (product as Product & { sport?: string | null }).sport ?? null
+      if (!sportValue) {
+        return activeSport === "soccer"
+      }
+      return sportValue === activeSport
+    })
+  }
 
   if (query) {
     const queryLower = query.toLowerCase()
@@ -74,6 +100,11 @@ export default async function CatalogPage({ params, searchParams }: Props) {
           {productList.length} producto{productList.length !== 1 ? "s" : ""} disponible{productList.length !== 1 ? "s" : ""}
         </p>
       </header>
+
+      <CatalogSportFilter
+        activeSport={isSportFilterEnabled ? activeSport : null}
+        category={category}
+      />
 
       {productList.length > 0 ? (
         <div className="grid grid-cols-2 gap-4 md:gap-6 md:grid-cols-3 lg:grid-cols-4 overflow-hidden">
