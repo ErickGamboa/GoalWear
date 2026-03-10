@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
+export const revalidate = 60
+
 async function getFeaturedProducts(query?: string) {
   const supabase = await createClient()
 
@@ -13,10 +15,10 @@ async function getFeaturedProducts(query?: string) {
     categories.map(async (category) => {
       let dbQuery = supabase
         .from("products")
-        .select(`
-          *,
-          product_sizes (size, stock)
-        `)
+        .select(
+          `id, name, price, image_url, image_url_2, image_url_3, team, code, sport, category, has_stock,
+          product_sizes (size, stock)`
+        )
         .eq("category", category)
         .order("created_at", { ascending: false })
 
