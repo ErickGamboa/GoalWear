@@ -41,22 +41,22 @@ export const SPORT_OPTIONS: { id: SportType; label: string; slug: string }[] = [
   },
   {
     id: "basketball",
-    label: "Basketball",
+    label: "Baloncesto",
     slug: "basketball",
   },
   {
     id: "football",
-    label: "Football Americano",
+    label: "Fútbol americano",
     slug: "football",
   },
   {
     id: "formula1",
-    label: "Formula 1",
+    label: "Fórmula 1",
     slug: "formula-1",
   },
   {
     id: "baseball",
-    label: "Baseball",
+    label: "Béisbol",
     slug: "baseball",
   },
 ]
