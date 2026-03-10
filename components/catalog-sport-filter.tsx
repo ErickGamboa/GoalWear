@@ -44,31 +44,73 @@ export function CatalogSportFilter({ activeSport, category }: CatalogSportFilter
       <div className="mt-4 flex flex-wrap justify-center gap-3">
         {SPORT_OPTIONS.map((option) => {
           const isActive = activeSport === option.id
-          const emoji = option.id === "soccer"
-            ? "⚽"
-            : option.id === "basketball"
-              ? "🏀"
-              : option.id === "football"
-                ? "🏈"
-                : option.id === "formula1"
-                  ? "🏎️"
-                  : option.id === "baseball"
-                    ? "⚾"
-                    : null
-          const labelContent = emoji ? (
-            <span className="flex items-center gap-2">
-              <span
-                aria-hidden
-                className={cn(
-                  "text-lg leading-none",
-                  isActive ? "opacity-100" : "opacity-80"
-                )}
-              >
-                {emoji}
+          const emoji = null
+
+          const labelContent = option.id === "football"
+            ? (
+              <span className="flex items-center gap-2">
+                <img
+                  src="/icons/futbol-americano.png"
+                  alt="Fútbol Americano"
+                  className="h-6 w-6 object-contain"
+                />
+                <span>{option.label}</span>
               </span>
-              <span>{option.label}</span>
-            </span>
-          ) : option.label
+            )
+            : option.id === "soccer" ? (
+              <span className="flex items-center gap-2">
+                <img
+                  src="/icons/futbol.png"
+                  alt="Fútbol"
+                  className="h-6 w-6 object-contain"
+                />
+                <span>{option.label}</span>
+              </span>
+            )
+            : option.id === "basketball" ? (
+              <span className="flex items-center gap-2">
+                <img
+                  src="/icons/baloncesto.png"
+                  alt="Basketball"
+                  className="h-6 w-6 object-contain"
+                />
+                <span>{option.label}</span>
+              </span>
+            )
+            : option.id === "formula1" ? (
+              <span className="flex items-center gap-2">
+                <img
+                  src="/icons/formula-uno.png"
+                  alt="Formula 1"
+                  className="h-6 w-6 object-contain"
+                />
+                <span>{option.label}</span>
+              </span>
+            )
+            : option.id === "baseball" ? (
+              <span className="flex items-center gap-2">
+                <img
+                  src="/icons/beisbol.png"
+                  alt="Baseball"
+                  className="h-6 w-6 object-contain"
+                />
+                <span>{option.label}</span>
+              </span>
+            )
+            : emoji ? (
+              <span className="flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "text-lg leading-none",
+                    isActive ? "opacity-100" : "opacity-80"
+                  )}
+                >
+                  {emoji}
+                </span>
+                <span>{option.label}</span>
+              </span>
+            ) : option.label
           return (
             <button
               key={option.id}
