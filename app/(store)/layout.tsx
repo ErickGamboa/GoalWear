@@ -1,4 +1,4 @@
-import React from "react"
+import React, { Suspense } from "react"
 import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { CartSheet } from "@/components/cart-sheet"
@@ -13,8 +13,12 @@ export default function StoreLayout({
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <div className="flex min-h-svh flex-col">
-        <WorldCupOverlay />
-        <StoreHeader />
+        <Suspense fallback={null}>
+          <WorldCupOverlay />
+        </Suspense>
+        <Suspense fallback={null}>
+          <StoreHeader />
+        </Suspense>
         <CartSheet />
         <main className="flex-1">{children}</main>
         <StoreFooter />
