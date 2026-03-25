@@ -9,10 +9,18 @@ export default async function OrdersPage() {
   const supabase = await createClient()
   const { data } = await supabase
     .from("orders")
-    .select("*, order_items(*)")
+    .select("*, order_items(*, products(image_url))")
     .order("created_at", { ascending: false })
 
-  const orders = (data ?? []) as OrderWithItems[]
+  const { data: patchesData } = await supabase
+    .from("patches")
+    .select("name, image_url")
+    .order("name")
 
-  return <OrdersClient orders={orders} />
+  const orders = (data ?? []) as OrderWithItems[]
+  const patchMap = Object.fromEntries(
+    (patchesData ?? []).map((patch) => [patch.name, patch.image_url])
+  )
+
+  return <OrdersClient orders={orders} patchMap={patchMap} />
 }
