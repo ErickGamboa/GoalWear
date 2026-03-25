@@ -3,16 +3,17 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { SPORT_OPTIONS, SPORT_ID_TO_SLUG } from "@/lib/types"
-import type { SportType } from "@/lib/types"
+import type { SoccerType, SportType } from "@/lib/types"
 
 interface CatalogSportFilterProps {
   activeSport?: SportType | null
+  activeSoccerType?: SoccerType | null
   category: string
 }
 
 const FILTERABLE_CATEGORIES = new Set(["immediate", "preorder"])
 
-export function CatalogSportFilter({ activeSport, category }: CatalogSportFilterProps) {
+export function CatalogSportFilter({ activeSport, activeSoccerType, category }: CatalogSportFilterProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -21,9 +22,16 @@ export function CatalogSportFilter({ activeSport, category }: CatalogSportFilter
     return null
   }
 
-  const buildUrl = (nextSport: SportType) => {
+  const buildUrl = (nextSport: SportType, nextSoccerType?: SoccerType | null) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set("sport", SPORT_ID_TO_SLUG[nextSport])
+
+    if (nextSport === "soccer" && nextSoccerType) {
+      params.set("soccerType", nextSoccerType)
+    } else {
+      params.delete("soccerType")
+    }
+
     const query = params.toString()
     return query ? `${pathname}?${query}` : pathname
   }
@@ -31,6 +39,12 @@ export function CatalogSportFilter({ activeSport, category }: CatalogSportFilter
   const handleSelect = (sport: SportType) => {
     if (activeSport === sport) return
     router.push(buildUrl(sport))
+  }
+
+  const handleSoccerTypeSelect = (soccerType: SoccerType | null) => {
+    if (activeSport !== "soccer") return
+    if (activeSoccerType === soccerType) return
+    router.push(buildUrl("soccer", soccerType))
   }
 
   return (
@@ -134,6 +148,49 @@ export function CatalogSportFilter({ activeSport, category }: CatalogSportFilter
           )
         })}
       </div>
+
+      {activeSport === "soccer" && (
+        <div className="mt-4 flex flex-wrap justify-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          <button
+            type="button"
+            onClick={() => handleSoccerTypeSelect(null)}
+            className={cn(
+              "rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200",
+              !activeSoccerType
+                ? "border-foreground bg-foreground text-background"
+                : "border-border/70 bg-background text-foreground hover:border-foreground/70 hover:bg-muted/40"
+            )}
+          >
+            Todos
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSoccerTypeSelect("club")}
+            className={cn(
+              "rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200",
+              activeSoccerType === "club"
+                ? "border-foreground bg-foreground text-background"
+                : "border-border/70 bg-background text-foreground hover:border-foreground/70 hover:bg-muted/40"
+            )}
+          >
+            Clubes
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSoccerTypeSelect("selection")}
+            className={cn(
+              "rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-200",
+              activeSoccerType === "selection"
+                ? "border-foreground bg-foreground text-background"
+                : "border-border/70 bg-background text-foreground hover:border-foreground/70 hover:bg-muted/40"
+            )}
+          >
+            Selecciones
+          </button>
+        </div>
+      )}
     </section>
   )
 }

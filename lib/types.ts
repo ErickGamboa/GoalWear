@@ -1,4 +1,5 @@
 export type SportType = "soccer" | "basketball" | "football" | "formula1" | "baseball"
+export type SoccerType = "club" | "selection"
 
 export type Product = {
   id: string
@@ -11,6 +12,7 @@ export type Product = {
   image_url_3: string | null
   category: "immediate" | "preorder" | "accessory"
   sport: SportType
+  soccer_type: SoccerType | null
   has_stock: boolean
   created_at: string
 }

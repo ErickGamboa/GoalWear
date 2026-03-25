@@ -7,13 +7,13 @@ import { CatalogSportFilter } from "@/components/catalog-sport-filter"
 import { ProductCard } from "@/components/product-card"
 import { createClient } from "@/lib/supabase/server"
 import { CATEGORY_LABELS, SLUG_TO_CATEGORY, SPORT_SLUG_TO_ID } from "@/lib/types"
-import type { Product } from "@/lib/types"
+import type { Product, SoccerType } from "@/lib/types"
 
 export const revalidate = 60
 
 type Props = {
   params: Promise<{ category: string }>
-  searchParams: Promise<{ q?: string; sport?: string; page?: string }>
+  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; page?: string }>
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
 
 const PAGE_SIZE = 12
 const PRODUCT_COLUMNS = `
-  id, name, price, image_url, image_url_2, image_url_3, team, code, sport, category, has_stock, created_at,
+  id, name, price, image_url, image_url_2, image_url_3, team, code, sport, soccer_type, category, has_stock, created_at,
   product_sizes (size, stock)
 `
 type ProductRecord = Product & {
@@ -42,7 +42,7 @@ function hasImmediateStock(product: ProductRecord) {
 
 export default async function CatalogPage({ params, searchParams }: Props) {
   const { category: slug } = await params
-  const { q: query, sport: sportSlug, page: pageParam } = await searchParams
+  const { q: query, sport: sportSlug, soccerType: soccerTypeParam, page: pageParam } = await searchParams
   const category = SLUG_TO_CATEGORY[slug]
   if (!category) notFound()
 
@@ -68,6 +68,10 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
   const resolvedSport = sportSlug ? SPORT_SLUG_TO_ID[sportSlug] : undefined
   const activeSport = isSportFilterEnabled ? (resolvedSport ?? "soccer") : null
+  const activeSoccerType: SoccerType | null =
+    activeSport === "soccer" && (soccerTypeParam === "club" || soccerTypeParam === "selection")
+      ? soccerTypeParam
+      : null
 
   let dbQuery = supabase
     .from("products")
@@ -78,6 +82,9 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   if (activeSport) {
     if (activeSport === "soccer") {
       dbQuery = dbQuery.or("sport.eq.soccer,sport.is.null")
+      if (activeSoccerType) {
+        dbQuery = dbQuery.eq("soccer_type", activeSoccerType)
+      }
     } else {
       dbQuery = dbQuery.eq("sport", activeSport)
     }
@@ -91,6 +98,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     const params = new URLSearchParams()
     if (query) params.set("q", query)
     if (sportSlug) params.set("sport", sportSlug)
+    if (activeSport === "soccer" && activeSoccerType) params.set("soccerType", activeSoccerType)
     if (page > 1) params.set("page", String(page))
     const qs = params.toString()
     return qs ? `/catalogo/${slug}?${qs}` : `/catalogo/${slug}`
@@ -156,6 +164,10 @@ export default async function CatalogPage({ params, searchParams }: Props) {
         }
         return sportValue === activeSport
       })
+
+      if (activeSport === "soccer" && activeSoccerType) {
+        productList = productList.filter((product) => product.soccer_type === activeSoccerType)
+      }
     }
 
     if (query) {
@@ -205,6 +217,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
       <CatalogSportFilter
         activeSport={isSportFilterEnabled ? activeSport : null}
+        activeSoccerType={isSportFilterEnabled ? activeSoccerType : null}
         category={category}
       />
 

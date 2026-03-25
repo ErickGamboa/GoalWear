@@ -19,7 +19,7 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Plus, X } from "lucide-react"
 import { toast } from "sonner"
-import type { ProductWithSizes, SportType } from "@/lib/types"
+import type { ProductWithSizes, SoccerType, SportType } from "@/lib/types"
 import { SPORT_OPTIONS } from "@/lib/types"
 
 const ADULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"]
@@ -49,6 +49,7 @@ export function ProductForm({ product, mode }: Props) {
   const [price, setPrice] = useState(product ? String(product.price) : "")
   const [category, setCategory] = useState(product?.category ?? "immediate")
   const [sport, setSport] = useState<SportType>(product?.sport ?? "soccer")
+  const [soccerType, setSoccerType] = useState<SoccerType>(product?.soccer_type ?? "club")
   const [hasStock, setHasStock] = useState(product?.has_stock ?? true)
   const [imageUrl, setImageUrl] = useState(product?.image_url ?? "")
   const [imageUrl2, setImageUrl2] = useState(product?.image_url_2 ?? "")
@@ -133,6 +134,7 @@ export function ProductForm({ product, mode }: Props) {
         price: parseFloat(price),
         category,
         sport,
+        soccer_type: sport === "soccer" ? soccerType : null,
         has_stock: hasStock,
         image_url: finalImageUrl || null,
         image_url_2: finalImageUrl2 || null,
@@ -278,6 +280,21 @@ export function ProductForm({ product, mode }: Props) {
                 </SelectContent>
               </Select>
             </div>
+
+            {sport === "soccer" && (
+              <div>
+                <Label>Tipo de Futbol *</Label>
+                <Select value={soccerType} onValueChange={(val) => setSoccerType(val as SoccerType)}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="club">Clubes</SelectItem>
+                    <SelectItem value="selection">Selecciones</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
