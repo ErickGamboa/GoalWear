@@ -1,6 +1,7 @@
 "use client"
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import { SPORT_OPTIONS, SPORT_ID_TO_SLUG } from "@/lib/types"
 import type { SoccerType, SportType } from "@/lib/types"
@@ -8,12 +9,18 @@ import type { SoccerType, SportType } from "@/lib/types"
 interface CatalogSportFilterProps {
   activeSport?: SportType | null
   activeSoccerType?: SoccerType | null
+  activeWorldCupMode?: boolean
   category: string
 }
 
 const FILTERABLE_CATEGORIES = new Set(["immediate", "preorder"])
 
-export function CatalogSportFilter({ activeSport, activeSoccerType, category }: CatalogSportFilterProps) {
+export function CatalogSportFilter({
+  activeSport,
+  activeSoccerType,
+  activeWorldCupMode,
+  category,
+}: CatalogSportFilterProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -22,7 +29,11 @@ export function CatalogSportFilter({ activeSport, activeSoccerType, category }: 
     return null
   }
 
-  const buildUrl = (nextSport: SportType, nextSoccerType?: SoccerType | null) => {
+  const buildUrl = (
+    nextSport: SportType,
+    nextSoccerType?: SoccerType | null,
+    nextWorldCupMode?: boolean
+  ) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set("sport", SPORT_ID_TO_SLUG[nextSport])
 
@@ -30,6 +41,12 @@ export function CatalogSportFilter({ activeSport, activeSoccerType, category }: 
       params.set("soccerType", nextSoccerType)
     } else {
       params.delete("soccerType")
+    }
+
+    if (nextSport === "soccer" && nextSoccerType === "selection" && nextWorldCupMode) {
+      params.set("worldCup", "1")
+    } else {
+      params.delete("worldCup")
     }
 
     const query = params.toString()
@@ -44,7 +61,13 @@ export function CatalogSportFilter({ activeSport, activeSoccerType, category }: 
   const handleSoccerTypeSelect = (soccerType: SoccerType | null) => {
     if (activeSport !== "soccer") return
     if (activeSoccerType === soccerType) return
-    router.push(buildUrl("soccer", soccerType))
+    const nextWorldCupMode = soccerType === "selection" ? Boolean(activeWorldCupMode) : false
+    router.push(buildUrl("soccer", soccerType, nextWorldCupMode))
+  }
+
+  const handleWorldCupToggle = (checked: boolean) => {
+    if (activeSport !== "soccer" || activeSoccerType !== "selection") return
+    router.push(buildUrl("soccer", "selection", checked))
   }
 
   return (
@@ -189,6 +212,31 @@ export function CatalogSportFilter({ activeSport, activeSoccerType, category }: 
           >
             Selecciones
           </button>
+
+          {activeSoccerType === "selection" && (
+            <div
+              className={cn(
+                "ml-1 inline-flex items-center gap-3 rounded-full border px-4 py-2",
+                "transition-all duration-300",
+                activeWorldCupMode
+                  ? "border-amber-300/90 bg-gradient-to-r from-amber-100 via-red-100 to-emerald-100 shadow-lg"
+                  : "border-border/70 bg-background"
+              )}
+            >
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground">
+                Modo Mundial
+              </span>
+              <Switch
+                checked={Boolean(activeWorldCupMode)}
+                onCheckedChange={handleWorldCupToggle}
+                aria-label="Activar modo mundial"
+                className={cn(
+                  activeWorldCupMode &&
+                    "data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-input"
+                )}
+              />
+            </div>
+          )}
         </div>
       )}
     </section>

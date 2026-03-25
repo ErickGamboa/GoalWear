@@ -13,7 +13,7 @@ export const revalidate = 60
 
 type Props = {
   params: Promise<{ category: string }>
-  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; page?: string }>
+  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string }>
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -42,7 +42,13 @@ function hasImmediateStock(product: ProductRecord) {
 
 export default async function CatalogPage({ params, searchParams }: Props) {
   const { category: slug } = await params
-  const { q: query, sport: sportSlug, soccerType: soccerTypeParam, page: pageParam } = await searchParams
+  const {
+    q: query,
+    sport: sportSlug,
+    soccerType: soccerTypeParam,
+    worldCup: worldCupParam,
+    page: pageParam,
+  } = await searchParams
   const category = SLUG_TO_CATEGORY[slug]
   if (!category) notFound()
 
@@ -72,6 +78,10 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     activeSport === "soccer" && (soccerTypeParam === "club" || soccerTypeParam === "selection")
       ? soccerTypeParam
       : null
+  const activeWorldCupMode =
+    activeSport === "soccer" &&
+    activeSoccerType === "selection" &&
+    (worldCupParam === "1" || worldCupParam === "true")
 
   let dbQuery = supabase
     .from("products")
@@ -99,6 +109,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     if (query) params.set("q", query)
     if (sportSlug) params.set("sport", sportSlug)
     if (activeSport === "soccer" && activeSoccerType) params.set("soccerType", activeSoccerType)
+    if (activeWorldCupMode) params.set("worldCup", "1")
     if (page > 1) params.set("page", String(page))
     const qs = params.toString()
     return qs ? `/catalogo/${slug}?${qs}` : `/catalogo/${slug}`
@@ -199,7 +210,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 md:py-16">
+    <div className="mx-auto max-w-7xl px-4 py-10 md:py-16 relative">
       <header className="animate-in fade-in slide-in-from-bottom-4 duration-500 mb-10">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
           Catalogo
@@ -218,6 +229,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
       <CatalogSportFilter
         activeSport={isSportFilterEnabled ? activeSport : null}
         activeSoccerType={isSportFilterEnabled ? activeSoccerType : null}
+        activeWorldCupMode={activeWorldCupMode}
         category={category}
       />
 

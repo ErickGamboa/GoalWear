@@ -3,6 +3,7 @@ import { StoreHeader } from "@/components/store-header"
 import { StoreFooter } from "@/components/store-footer"
 import { CartSheet } from "@/components/cart-sheet"
 import { ThemeProvider } from "@/components/theme-provider"
+import { WorldCupOverlay } from "@/components/world-cup-overlay"
 
 export default function StoreLayout({
   children,
@@ -12,6 +13,7 @@ export default function StoreLayout({
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <div className="flex min-h-svh flex-col">
+        <WorldCupOverlay />
         <StoreHeader />
         <CartSheet />
         <main className="flex-1">{children}</main>

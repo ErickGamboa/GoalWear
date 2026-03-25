@@ -1,10 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { ShoppingCart, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
 import { useState, Suspense } from "react"
+import { cn } from "@/lib/utils"
 import { ProductSearch } from "./product-search"
 import { ThemeToggle } from "./theme-toggle"
 
@@ -18,15 +20,35 @@ const NAV_LINKS = [
 export function StoreHeader() {
   const { totalItems, setIsOpen } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)
+  const searchParams = useSearchParams()
+
+  const isWorldCupMode =
+    searchParams.get("sport") === "futbol" &&
+    searchParams.get("soccerType") === "selection" &&
+    (searchParams.get("worldCup") === "1" || searchParams.get("worldCup") === "true")
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <header
+      className={cn(
+        "sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl transition-all duration-700",
+        isWorldCupMode &&
+          "border-amber-300/60 bg-gradient-to-r from-amber-100/90 via-rose-100/80 to-emerald-100/90"
+      )}
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:py-4">
         <Link href="/" className="mr-4 flex items-center gap-2.5 shrink-0 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground transition-transform duration-300 group-hover:scale-105 md:h-10 md:w-10">
+          <div
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-xl bg-foreground transition-transform duration-300 group-hover:scale-105 md:h-10 md:w-10",
+              isWorldCupMode &&
+                "bg-gradient-to-br from-amber-500 via-red-500 to-emerald-500 text-white shadow-lg shadow-amber-300/40"
+            )}
+          >
             <span className="text-xs font-bold text-background md:text-sm">GW</span>
           </div>
-          <span className="hidden text-lg font-bold text-foreground sm:block">GOΛLWEΛR</span>
+          <span className="hidden text-lg font-bold text-foreground sm:block">
+            {isWorldCupMode ? "GOΛLWEΛR MUNDIAL" : "GOΛLWEΛR"}
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
