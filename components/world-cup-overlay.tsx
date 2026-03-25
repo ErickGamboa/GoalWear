@@ -4,6 +4,14 @@ import { useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const WORLD_CUP_ICONS = [
+  "/world-cup/trophy_1106986.png",
+  "/world-cup/trophy_1106986.png",
+  "/world-cup/trophy_1106986.png",
+  "/world-cup/trophy_1106986.png",
+  "/world-cup/trophy_1106986.png",
+  "/world-cup/trophy_1106986.png",
+  "/world-cup/trophy_1106986.png",
+  "/world-cup/trophy_1106986.png",
   "/world-cup/canada.png",
   "/world-cup/estados-unidos-de-america.png",
   "/world-cup/golden-glove_250606.png",

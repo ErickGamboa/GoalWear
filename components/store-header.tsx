@@ -32,7 +32,7 @@ export function StoreHeader() {
       className={cn(
         "sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl transition-all duration-700",
         isWorldCupMode &&
-          "border-amber-300/60 bg-gradient-to-r from-amber-100/90 via-rose-100/80 to-emerald-100/90"
+          "border-white/70 bg-[linear-gradient(90deg,rgba(0,104,71,0.24)_0%,rgba(255,255,255,0.88)_35%,rgba(206,17,38,0.22)_68%,rgba(60,59,110,0.24)_100%)]"
       )}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:py-4">
@@ -41,12 +41,12 @@ export function StoreHeader() {
             className={cn(
               "flex h-9 w-9 items-center justify-center rounded-xl bg-foreground transition-transform duration-300 group-hover:scale-105 md:h-10 md:w-10",
               isWorldCupMode &&
-                "bg-gradient-to-br from-amber-500 via-red-500 to-emerald-500 text-white shadow-lg shadow-amber-300/40"
+                "bg-gradient-to-br from-[#006847] via-[#ffffff] to-[#CE1126] text-[#3C3B6E] shadow-lg shadow-[#3C3B6E]/20"
             )}
           >
-            <span className="text-xs font-bold text-background md:text-sm">GW</span>
+            <span className={cn("text-xs font-bold md:text-sm", isWorldCupMode ? "text-[#3C3B6E]" : "text-background")}>GW</span>
           </div>
-          <span className="hidden text-lg font-bold text-foreground sm:block">
+          <span className={cn("hidden text-lg font-bold text-foreground sm:block", isWorldCupMode && "text-[#1f2a44]") }>
             {isWorldCupMode ? "GOΛLWEΛR MUNDIAL" : "GOΛLWEΛR"}
           </span>
         </Link>

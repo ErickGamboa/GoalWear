@@ -219,11 +219,11 @@ export function CatalogSportFilter({
                 "ml-1 inline-flex items-center gap-3 rounded-full border px-4 py-2",
                 "transition-all duration-300",
                 activeWorldCupMode
-                  ? "border-amber-300/90 bg-gradient-to-r from-amber-100 via-red-100 to-emerald-100 shadow-lg"
+                  ? "border-white/80 bg-[linear-gradient(90deg,rgba(0,104,71,0.18)_0%,rgba(255,255,255,0.92)_36%,rgba(206,17,38,0.16)_68%,rgba(60,59,110,0.18)_100%)] shadow-lg shadow-[#3C3B6E]/20"
                   : "border-border/70 bg-background"
               )}
             >
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#1f2a44]">
                 Modo Mundial
               </span>
               <Switch
@@ -232,7 +232,7 @@ export function CatalogSportFilter({
                 aria-label="Activar modo mundial"
                 className={cn(
                   activeWorldCupMode &&
-                    "data-[state=checked]:bg-amber-500 data-[state=unchecked]:bg-input"
+                    "data-[state=checked]:bg-[#3C3B6E] data-[state=unchecked]:bg-input"
                 )}
               />
             </div>

@@ -40,6 +40,10 @@ function hasImmediateStock(product: ProductRecord) {
   return product.product_sizes?.some((size) => size.stock > 0) ?? false
 }
 
+function hasWorldCupName(product: ProductRecord) {
+  return product.name.toLowerCase().includes("mundial")
+}
+
 export default async function CatalogPage({ params, searchParams }: Props) {
   const { category: slug } = await params
   const {
@@ -131,7 +135,8 @@ export default async function CatalogPage({ params, searchParams }: Props) {
       }
 
       const productList = ((data ?? []) as ProductRecord[]).filter(hasImmediateStock)
-      totalProducts = productList.length
+      const filteredList = activeWorldCupMode ? productList.filter(hasWorldCupName) : productList
+      totalProducts = filteredList.length
       totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
 
       if (totalProducts > 0 && requestedPage > totalPages) {
@@ -140,28 +145,50 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
       currentPage = Math.min(requestedPage, totalPages)
       const startIndex = (currentPage - 1) * PAGE_SIZE
-      paginatedProducts = productList.slice(startIndex, startIndex + PAGE_SIZE)
+      paginatedProducts = filteredList.slice(startIndex, startIndex + PAGE_SIZE)
       showingStart = totalProducts === 0 ? 0 : startIndex + 1
       showingEnd = Math.min(totalProducts, startIndex + paginatedProducts.length)
     } else {
-      const offset = (requestedPage - 1) * PAGE_SIZE
-      const { data, count, error } = await dbQuery.range(offset, offset + PAGE_SIZE - 1)
+      if (activeWorldCupMode) {
+        const { data, error } = await dbQuery
 
-      if (error) {
-        throw error
+        if (error) {
+          throw error
+        }
+
+        const filteredList = ((data ?? []) as ProductRecord[]).filter(hasWorldCupName)
+        totalProducts = filteredList.length
+        totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
+
+        if (totalProducts > 0 && requestedPage > totalPages) {
+          redirect(buildPageHref(totalPages))
+        }
+
+        currentPage = Math.min(requestedPage, totalPages)
+        const startIndex = (currentPage - 1) * PAGE_SIZE
+        paginatedProducts = filteredList.slice(startIndex, startIndex + PAGE_SIZE)
+        showingStart = totalProducts === 0 ? 0 : startIndex + 1
+        showingEnd = Math.min(totalProducts, startIndex + paginatedProducts.length)
+      } else {
+        const offset = (requestedPage - 1) * PAGE_SIZE
+        const { data, count, error } = await dbQuery.range(offset, offset + PAGE_SIZE - 1)
+
+        if (error) {
+          throw error
+        }
+
+        totalProducts = count ?? 0
+        totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
+
+        if (totalProducts > 0 && requestedPage > totalPages) {
+          redirect(buildPageHref(totalPages))
+        }
+
+        currentPage = Math.min(requestedPage, totalPages)
+        paginatedProducts = (data ?? []) as ProductRecord[]
+        showingStart = totalProducts === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
+        showingEnd = totalProducts === 0 ? 0 : showingStart + paginatedProducts.length - 1
       }
-
-      totalProducts = count ?? 0
-      totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
-
-      if (totalProducts > 0 && requestedPage > totalPages) {
-        redirect(buildPageHref(totalPages))
-      }
-
-      currentPage = Math.min(requestedPage, totalPages)
-      paginatedProducts = (data ?? []) as ProductRecord[]
-      showingStart = totalProducts === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
-      showingEnd = totalProducts === 0 ? 0 : showingStart + paginatedProducts.length - 1
     }
   } else {
     const { data } = await dbQuery
@@ -193,6 +220,10 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
     if (category === "immediate") {
       productList = productList.filter(hasImmediateStock)
+    }
+
+    if (activeWorldCupMode) {
+      productList = productList.filter(hasWorldCupName)
     }
 
     totalProducts = productList.length
