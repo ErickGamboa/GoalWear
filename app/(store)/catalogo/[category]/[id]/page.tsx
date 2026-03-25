@@ -14,15 +14,25 @@ type Props = {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params
+  const { category: slug, id } = await params
+  const category = SLUG_TO_CATEGORY[slug]
+  if (!category) return {}
+
   const supabase = await createClient()
   const { data: product } = await supabase
     .from("products")
-    .select("name, team")
+    .select("name, team, product_sizes(stock)")
     .eq("id", id)
+    .eq("category", category)
     .single()
 
   if (!product) return {}
+
+  if (category === "immediate") {
+    const hasAvailableSize = product.product_sizes?.some((size: { stock: number }) => size.stock > 0)
+    if (!hasAvailableSize) return {}
+  }
+
   return {
     title: `${product.name} | GOΛLWEΛR`,
     description: `${product.name}${product.team ? ` - ${product.team}` : ""} en GOΛLWEΛR`,
@@ -40,9 +50,15 @@ export default async function ProductDetailPage({ params }: Props) {
     .from("products")
     .select("*, product_sizes(*)")
     .eq("id", id)
+    .eq("category", category)
     .single()
 
   if (!product) notFound()
+
+  if (category === "immediate") {
+    const hasAvailableSize = product.product_sizes?.some((size: { stock: number }) => size.stock > 0)
+    if (!hasAvailableSize) notFound()
+  }
 
   const typedProduct = product as ProductWithSizes
   const categoryLabel = CATEGORY_LABELS[category]

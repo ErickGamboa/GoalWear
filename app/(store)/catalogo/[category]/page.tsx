@@ -36,6 +36,10 @@ type ProductRecord = Product & {
   product_sizes?: { size: string; stock: number }[]
 }
 
+function hasImmediateStock(product: ProductRecord) {
+  return product.product_sizes?.some((size) => size.stock > 0) ?? false
+}
+
 export default async function CatalogPage({ params, searchParams }: Props) {
   const { category: slug } = await params
   const { q: query, sport: sportSlug, page: pageParam } = await searchParams
@@ -100,24 +104,46 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   let showingEnd = 0
 
   if (!query) {
-    const offset = (requestedPage - 1) * PAGE_SIZE
-    const { data, count, error } = await dbQuery.range(offset, offset + PAGE_SIZE - 1)
+    if (category === "immediate") {
+      const { data, error } = await dbQuery
 
-    if (error) {
-      throw error
+      if (error) {
+        throw error
+      }
+
+      const productList = ((data ?? []) as ProductRecord[]).filter(hasImmediateStock)
+      totalProducts = productList.length
+      totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
+
+      if (totalProducts > 0 && requestedPage > totalPages) {
+        redirect(buildPageHref(totalPages))
+      }
+
+      currentPage = Math.min(requestedPage, totalPages)
+      const startIndex = (currentPage - 1) * PAGE_SIZE
+      paginatedProducts = productList.slice(startIndex, startIndex + PAGE_SIZE)
+      showingStart = totalProducts === 0 ? 0 : startIndex + 1
+      showingEnd = Math.min(totalProducts, startIndex + paginatedProducts.length)
+    } else {
+      const offset = (requestedPage - 1) * PAGE_SIZE
+      const { data, count, error } = await dbQuery.range(offset, offset + PAGE_SIZE - 1)
+
+      if (error) {
+        throw error
+      }
+
+      totalProducts = count ?? 0
+      totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
+
+      if (totalProducts > 0 && requestedPage > totalPages) {
+        redirect(buildPageHref(totalPages))
+      }
+
+      currentPage = Math.min(requestedPage, totalPages)
+      paginatedProducts = (data ?? []) as ProductRecord[]
+      showingStart = totalProducts === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
+      showingEnd = totalProducts === 0 ? 0 : showingStart + paginatedProducts.length - 1
     }
-
-    totalProducts = count ?? 0
-    totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
-
-    if (totalProducts > 0 && requestedPage > totalPages) {
-      redirect(buildPageHref(totalPages))
-    }
-
-    currentPage = Math.min(requestedPage, totalPages)
-    paginatedProducts = (data ?? []) as ProductRecord[]
-    showingStart = totalProducts === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
-    showingEnd = totalProducts === 0 ? 0 : showingStart + paginatedProducts.length - 1
   } else {
     const { data } = await dbQuery
     let productList = (data ?? []) as ProductRecord[]
@@ -138,14 +164,12 @@ export default async function CatalogPage({ params, searchParams }: Props) {
         p.name.toLowerCase().includes(queryLower) ||
         (p.team && p.team.toLowerCase().includes(queryLower)) ||
         p.code.toLowerCase().includes(queryLower) ||
-        p.product_sizes?.some((s: any) => s.size.toLowerCase().includes(queryLower))
+        p.product_sizes?.some((s) => s.size.toLowerCase().includes(queryLower))
       )
     }
 
     if (category === "immediate") {
-      productList = productList.filter((p) =>
-        p.product_sizes?.some((s: any) => s.stock > 0)
-      )
+      productList = productList.filter(hasImmediateStock)
     }
 
     totalProducts = productList.length

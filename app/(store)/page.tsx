@@ -22,6 +22,10 @@ async function getFeaturedProducts(query?: string) {
         .eq("category", category)
         .order("created_at", { ascending: false })
 
+      if (category === "immediate" || category === "preorder") {
+        dbQuery = dbQuery.eq("sport", "soccer")
+      }
+
       if (query) {
         dbQuery = dbQuery.or(`name.ilike.%${query}%,team.ilike.%${query}%,code.ilike.%${query}%`)
       } else {
