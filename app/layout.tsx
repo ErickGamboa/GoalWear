@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { CartProvider } from '@/lib/cart-context'
+import { WhatsAppFloatingButton } from '@/components/whatsapp-floating-button'
 
 import './globals.css'
 
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <CartProvider>
           {children}
+          <WhatsAppFloatingButton />
           <Toaster position="bottom-right" />
         </CartProvider>
       </body>
