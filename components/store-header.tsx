@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { ShoppingCart, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
@@ -20,7 +20,17 @@ const NAV_LINKS = [
 export function StoreHeader() {
   const { totalItems, setIsOpen } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
   const searchParams = useSearchParams()
+
+  const normalizedPath = pathname.endsWith("/") && pathname.length > 1
+    ? pathname.slice(0, -1)
+    : pathname
+
+  const isProductDetailPage = /^\/catalogo\/[^/]+\/[^/]+$/.test(normalizedPath)
+  const isCheckoutPage = normalizedPath.startsWith("/checkout")
+  const isCheckoutSuccessPage = normalizedPath === "/checkout/exito"
+  const shouldShowSearch = !isProductDetailPage && !isCheckoutPage && !isCheckoutSuccessPage
 
   const isWorldCupMode =
     searchParams.get("sport") === "futbol" &&
@@ -64,9 +74,11 @@ export function StoreHeader() {
         </nav>
 
         <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
-          <Suspense fallback={<div className="h-10 w-full md:max-w-[300px]" />}>
-            <ProductSearch />
-          </Suspense>
+          {shouldShowSearch && (
+            <Suspense fallback={<div className="h-10 w-full md:max-w-[300px]" />}>
+              <ProductSearch />
+            </Suspense>
+          )}
           <div className="flex items-center gap-1 md:gap-2">
             <ThemeToggle />
             <Button
