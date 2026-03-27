@@ -52,7 +52,7 @@ export function WhatsAppFloatingButton() {
   }
 
   return (
-    <div className="group fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
+    <div className="group fixed bottom-4 right-4 z-50">
       <a
         href={WHATSAPP_URL}
         target="_blank"
@@ -75,14 +75,14 @@ export function WhatsAppFloatingButton() {
       </a>
 
       <div
-        className={`pointer-events-none rounded-xl border border-border bg-card px-3 py-2 text-right text-[11px] font-semibold leading-tight text-card-foreground shadow-md transition-all duration-300 sm:text-xs ${
+        className={`pointer-events-none absolute right-[calc(100%+0.5rem)] top-1/2 w-max -translate-y-1/2 rounded-xl border border-border bg-card px-3 py-2 text-left text-[11px] font-semibold leading-tight text-card-foreground shadow-md transition-all duration-300 sm:text-xs ${
           showMobileHint
-            ? "translate-y-0 opacity-100"
-            : "translate-y-1 opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-focus-within:translate-y-0 md:group-focus-within:opacity-100"
+            ? "translate-x-0 opacity-100"
+            : "translate-x-1 opacity-0 md:group-hover:translate-x-0 md:group-hover:opacity-100 md:group-focus-within:translate-x-0 md:group-focus-within:opacity-100"
         }`}
       >
-        <p>No encontraste algo?</p>
-        <p>Contactanos</p>
+        <p>¿No lo encontraste?</p>
+        <p className="text-center">Escríbenos</p>
       </div>
     </div>
   )
