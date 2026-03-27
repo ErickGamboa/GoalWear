@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import type { MouseEvent } from "react"
 
 const WHATSAPP_PHONE = "50662411934"
-const WHATSAPP_MESSAGE = "Hola, no encontre lo que buscaba y quiero mas informacion."
+const WHATSAPP_MESSAGE = "Hola, quisiera consultar la disponibilidad de un producto."
 
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
 
