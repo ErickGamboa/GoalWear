@@ -1,30 +1,28 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
 import { Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { deleteProduct } from "./actions"
 
 export function DeleteProductButton({ productId }: { productId: string }) {
-  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
 
   async function handleDelete() {
-    if (!confirm("Estas seguro de eliminar este producto?")) return
+    if (!confirm("¿Estás seguro de eliminar este producto?")) return
 
-    const supabase = createClient()
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", productId)
-
-    if (error) {
-      toast.error("Error al eliminar producto")
-      return
+    setIsLoading(true)
+    try {
+      const result = await deleteProduct(productId)
+      if (!result.success) {
+        toast.error(result.message ?? "Error al eliminar producto")
+        return
+      }
+      toast.success("Producto eliminado")
+    } finally {
+      setIsLoading(false)
     }
-
-    toast.success("Producto eliminado")
-    router.refresh()
   }
 
   return (
@@ -33,6 +31,7 @@ export function DeleteProductButton({ productId }: { productId: string }) {
       size="icon"
       className="h-8 w-8 text-muted-foreground hover:text-destructive"
       onClick={handleDelete}
+      disabled={isLoading}
     >
       <Trash2 className="h-4 w-4" />
     </Button>

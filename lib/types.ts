@@ -95,7 +95,7 @@ export type Order = {
 export type OrderItem = {
   id: string
   order_id: string
-  product_id: string
+  product_id: string | null
   product_code: string
   product_name: string
   quantity: number
