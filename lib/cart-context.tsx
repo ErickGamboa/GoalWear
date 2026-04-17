@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 
 export type CartItem = {
   id: string
@@ -34,7 +34,21 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [hydrated, setHydrated] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("goalwear-cart")
+      if (stored) setItems(JSON.parse(stored))
+    } catch {}
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    localStorage.setItem("goalwear-cart", JSON.stringify(items))
+  }, [items, hydrated])
 
   const addItem = useCallback((newItem: CartItem) => {
     setItems((prev) => {
