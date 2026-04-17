@@ -178,8 +178,8 @@ export function ProductDetailClient({
   }
 
   return (
-    <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-      <div className="animate-in fade-in slide-in-from-left-4 duration-500 space-y-4">
+    <div className="grid gap-8 md:grid-cols-2 md:gap-12 overflow-x-hidden">
+      <div className="animate-in fade-in slide-in-from-bottom-4 md:slide-in-from-left-4 duration-500 space-y-4">
         <div 
           ref={containerRef}
           className="relative aspect-square overflow-hidden rounded-2xl bg-muted/50 border border-border/50 cursor-crosshair group"
@@ -229,7 +229,7 @@ export function ProductDetailClient({
         )}
       </div>
 
-      <div className="animate-in fade-in slide-in-from-right-4 duration-500 flex flex-col">
+      <div className="animate-in fade-in slide-in-from-bottom-4 md:slide-in-from-right-4 duration-500 flex flex-col">
         <Badge variant="outline" className="w-fit font-mono text-xs font-bold uppercase tracking-widest px-3 py-1 bg-muted/30">
           {product.code}
         </Badge>
@@ -240,7 +240,7 @@ export function ProductDetailClient({
           </p>
         )}
         
-        <h1 className="mt-2 text-3xl font-black text-foreground md:text-4xl leading-tight">
+        <h1 className="mt-2 text-2xl font-black text-foreground md:text-4xl leading-tight break-words">
           {product.name}
         </h1>
         
@@ -298,10 +298,10 @@ export function ProductDetailClient({
             </div>
             {isPlayerType && (
               <div className="mt-4 flex items-start gap-3 rounded-xl bg-muted/30 p-4 text-sm border border-border/50">
-                <div className="rounded-full bg-foreground/10 p-2">
+                <div className="rounded-full bg-foreground/10 p-2 shrink-0">
                   <Lightbulb className="h-4 w-4" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="font-bold uppercase tracking-tight">Tip de GOΛLWEΛR</p>
                   <p className="text-xs leading-relaxed text-muted-foreground">
                     Las camisetas tipo &quot;player&quot; tienen un corte mas ajustado al cuerpo.
@@ -430,16 +430,16 @@ export function ProductDetailClient({
           </div>
         )}
 
-        <div className="mt-8 flex flex-col gap-4">
+        <div className="mt-8 flex flex-col gap-3">
           {!isPreorder && !isAccessory && selectedSize && (
             <p className="text-xs font-medium text-muted-foreground">
-              {availableStock > 0 
-                ? `Disponibles: ${availableStock} unidades` 
+              {availableStock > 0
+                ? `Disponibles: ${availableStock} unidades`
                 : "Sin stock disponible"}
             </p>
           )}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center rounded-xl border border-border/50 bg-muted/20 px-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex items-center rounded-xl border border-border/50 bg-muted/20 px-2 self-start">
               <button
                 type="button"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -461,7 +461,7 @@ export function ProductDetailClient({
             </div>
 
             <Button
-              className="flex-1 h-12 rounded-full text-sm font-bold uppercase tracking-widest shadow-lg shadow-black/5 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              className="sm:flex-1 h-12 rounded-full text-sm font-bold uppercase tracking-widest shadow-lg shadow-black/5 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
               size="lg"
               disabled={!canAdd || isValidating}
               onClick={handleAddToCart}

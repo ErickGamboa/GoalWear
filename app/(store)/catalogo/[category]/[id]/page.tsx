@@ -70,20 +70,20 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
-      <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/" className="transition-colors hover:text-foreground">
+    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12 overflow-x-hidden">
+      <nav className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+        <Link href="/" className="transition-colors hover:text-foreground shrink-0">
           Inicio
         </Link>
-        <span>/</span>
+        <span className="shrink-0">/</span>
         <Link
           href={`/catalogo/${slug}`}
-          className="transition-colors hover:text-foreground"
+          className="transition-colors hover:text-foreground shrink-0"
         >
           {categoryLabel}
         </Link>
-        <span>/</span>
-        <span className="text-foreground">{typedProduct.name}</span>
+        <span className="shrink-0">/</span>
+        <span className="text-foreground min-w-0 break-words">{typedProduct.name}</span>
       </nav>
 
       <ProductDetailClient product={typedProduct} patches={patches} />
