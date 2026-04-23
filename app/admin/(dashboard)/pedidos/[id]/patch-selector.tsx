@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { updateOrderItemPatch } from "./patch-actions"
 import { toast } from "sonner"
-import { Loader2, RefreshCw, Plus, X } from "lucide-react"
+import { Loader2, RefreshCw, Plus, X, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
@@ -34,6 +34,11 @@ export function PatchSelector({
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
+  const [search, setSearch] = React.useState("")
+
+  const filteredPatches = search.trim()
+    ? allPatches.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+    : allPatches
 
   async function handlePatchSelect(newPatchName: string | null) {
     setLoading(true)
@@ -54,7 +59,7 @@ export function PatchSelector({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setSearch("") }}>
       <DialogTrigger asChild>
         <button
           className={cn(
@@ -90,12 +95,25 @@ export function PatchSelector({
           </div>
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Cambiar Parche</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-3 gap-4 py-4 sm:grid-cols-4 md:grid-cols-5">
-          {/* Option to remove patch */}
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Buscar parche..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </div>
+
+        <div className="max-h-[420px] overflow-y-auto">
+          <div className="grid grid-cols-3 gap-4 py-2 sm:grid-cols-4 md:grid-cols-5">
+          {!search.trim() && (
           <Button
             variant="outline"
             className="flex h-auto flex-col gap-2 p-3 hover:border-destructive hover:bg-destructive/5"
@@ -107,8 +125,9 @@ export function PatchSelector({
             </div>
             <span className="text-[10px] uppercase font-bold text-destructive">Eliminar</span>
           </Button>
+          )}
 
-          {allPatches.map((patch) => (
+          {filteredPatches.map((patch) => (
             <Button
               key={patch.name}
               variant={patch.name === currentPatchName ? "default" : "outline"}
@@ -137,7 +156,15 @@ export function PatchSelector({
               </span>
             </Button>
           ))}
+
+          {filteredPatches.length === 0 && (
+            <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
+              Sin resultados para &quot;{search}&quot;
+            </p>
+          )}
+          </div>
         </div>
+
         {loading && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
