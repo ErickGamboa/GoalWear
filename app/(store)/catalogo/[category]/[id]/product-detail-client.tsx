@@ -50,6 +50,7 @@ export function ProductDetailClient({
   const isAccessory = product.category === "accessory"
   const isPlayerType = product.name.toLowerCase().includes("player")
   const isKids = product.name.toLowerCase().includes("niñ")
+  const isBallSport = ["basketball", "football", "baseball"].includes(product.sport)
 
   const ADULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"]
   const KIDS_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"]
@@ -303,6 +304,34 @@ export function ProductDetailClient({
                   </p>
                 </div>
               </div>
+            )}
+            {isBallSport && (
+              <>
+                <div className="mt-4 flex items-start gap-3 rounded-xl bg-muted/30 p-4 text-sm border border-border/50">
+                  <div className="rounded-full bg-foreground/10 p-2 shrink-0">
+                    <Lightbulb className="h-4 w-4" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <p className="font-bold uppercase tracking-tight">Tip de GOΛLWEΛR</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      La personalizacion de estas camisetas debe hacerse con el nombre y numero de un jugador real del equipo.
+                      No se aceptan nombres ni numeros inventados, ya que la camiseta viene con la identidad oficial del jugador.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-start gap-3 rounded-xl bg-muted/30 p-4 text-sm border border-border/50">
+                  <div className="rounded-full bg-foreground/10 p-2 shrink-0">
+                    <Lightbulb className="h-4 w-4" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <p className="font-bold uppercase tracking-tight">Tip de GOΛLWEΛR</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      El nombre y numero de estas camisetas son bordados, no impresos.
+                      Esto garantiza un acabado profesional de alta durabilidad, igual al de los jugadores en cancha.
+                    </p>
+                  </div>
+                </div>
+              </>
             )}
             <Dialog open={sizeGuideOpen} onOpenChange={setSizeGuideOpen}>
               <DialogTrigger asChild>
