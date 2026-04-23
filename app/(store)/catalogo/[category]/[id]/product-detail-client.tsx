@@ -30,7 +30,8 @@ export function ProductDetailClient({
   const [selectedSize, setSelectedSize] = useState("")
   const [customName, setCustomName] = useState("")
   const [customNumber, setCustomNumber] = useState("")
-  const [selectedPatches, setSelectedPatches] = useState<string[]>([])
+  const [patchType, setPatchType] = useState<"liga" | "competicion" | "">("")
+  const [competitionName, setCompetitionName] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [activeImage, setActiveImage] = useState(product.image_url)
   const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ display: 'none' })
@@ -89,7 +90,13 @@ export function ProductDetailClient({
     !isOutOfStock && 
     product.has_stock
 
-  const patchTotal = 0 
+  const patchTotal = 0
+  const selectedPatches: string[] =
+    patchType === "liga"
+      ? ["Liga"]
+      : patchType === "competicion" && competitionName.trim()
+        ? [`Competicion Internacional: ${competitionName.trim()}`]
+        : []
 
   const unitPrice = Number(product.price)
 
@@ -161,20 +168,6 @@ export function ProductDetailClient({
     })
     toast.success("Producto agregado al carrito")
     router.refresh()
-  }
-
-  function togglePatch(patchName: string) {
-    setSelectedPatches((prev) => {
-      const isSelected = prev.includes(patchName)
-      if (isSelected) {
-        return prev.filter((p) => p !== patchName)
-      }
-      if (prev.length >= 2) {
-        toast.error("Maximo 2 parches por camiseta")
-        return prev
-      }
-      return [...prev, patchName]
-    })
   }
 
   return (
@@ -380,53 +373,40 @@ export function ProductDetailClient({
               </div>
             </div>
 
-            {patches.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                    Selecciona Parches (MAX 2)
-                  </Label>
-                  <Badge variant="outline" className="text-[10px] font-bold">
-                    {selectedPatches.length}/2
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
-                  {patches.map((patch) => {
-                    const isSelected = selectedPatches.includes(patch.name)
-                    return (
-                      <button
-                        key={patch.id}
-                        type="button"
-                        onClick={() => togglePatch(patch.name)}
-                        className={cn(
-                          "relative aspect-square overflow-hidden rounded-xl border-2 p-2 transition-all",
-                          isSelected 
-                            ? "border-foreground bg-background scale-110 shadow-lg shadow-black/10 z-10" 
-                            : "border-border/50 hover:border-foreground/50 hover:scale-105"
-                        )}
-                      >
-                        {patch.image_url ? (
-                          <img
-                            src={patch.image_url}
-                            alt={patch.name}
-                            className="h-full w-full object-contain"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-center font-bold leading-tight uppercase">
-                            {patch.name}
-                          </div>
-                        )}
-                        {isSelected && (
-                          <div className="absolute -top-1 -right-1 bg-foreground text-background rounded-full p-1 shadow-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </div>
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
+            <div className="space-y-3">
+              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                Seleccione Competicion para Parches
+              </Label>
+              <div className="flex gap-3">
+                {(["liga", "competicion"] as const).map((type) => {
+                  const label = type === "liga" ? "Liga" : "Competicion Internacional"
+                  const isSelected = patchType === type
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => { setPatchType(isSelected ? "" : type); setCompetitionName("") }}
+                      className={cn(
+                        "flex-1 rounded-xl border-2 px-3 py-3 text-xs font-bold uppercase tracking-wide transition-all",
+                        isSelected
+                          ? "border-foreground bg-foreground text-background shadow-lg shadow-black/10"
+                          : "border-border/50 text-foreground hover:border-foreground/50"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
               </div>
-            )}
+              {patchType === "competicion" && (
+                <Input
+                  placeholder="Ej: UEFA Champions League"
+                  value={competitionName}
+                  onChange={(e) => setCompetitionName(e.target.value)}
+                  className="h-12 rounded-xl border-border/50 bg-background font-medium focus:border-foreground transition-all"
+                />
+              )}
+            </div>
           </div>
         )}
 

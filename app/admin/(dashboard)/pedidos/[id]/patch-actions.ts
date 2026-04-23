@@ -21,16 +21,12 @@ export async function updateOrderItemPatch(
     return { error: "No se pudo encontrar el item del pedido" }
   }
 
-  // Aseguramos que el array tenga exactamente 2 posiciones
   let updatedPatches = item.patches || []
-  while (updatedPatches.length < 2) {
+  while (updatedPatches.length <= patchIndex) {
     updatedPatches.push(null)
   }
 
-  // Actualizamos el índice específico (sea para cambiar o poner null)
-  if (patchIndex >= 0 && patchIndex < 2) {
-    updatedPatches[patchIndex] = newPatchName
-  }
+  updatedPatches[patchIndex] = newPatchName
 
   // 2. Update database
   const { error: updateError, data: updateData } = await supabase

@@ -220,21 +220,43 @@ export default async function OrderDetailPage({ params }: Props) {
                           )}
                         </td>
                         <td className="p-4">
-                          <div className="flex flex-wrap gap-3">
-                            {[0, 1].map((index) => {
-                              const patchName = item.patches && item.patches[index] ? item.patches[index] : null;
-                              return (
-                                <PatchSelector
-                                  key={`${item.id}-${index}`}
-                                  orderItemId={item.id}
-                                  patchIndex={index}
-                                  currentPatchName={patchName}
-                                  patchImageUrl={patchName ? patchMap[patchName] : null}
-                                  allPatches={patchesData || []}
-                                />
-                              );
-                            })}
-                          </div>
+                          {(() => {
+                            const competitionInfo =
+                              item.patches?.[0] && !patchMap[item.patches[0]]
+                                ? item.patches[0]
+                                : null;
+                            const patchStartIndex = competitionInfo !== null ? 1 : 0;
+                            return (
+                              <>
+                                {competitionInfo && (
+                                  <div className="mb-3 rounded-lg bg-primary/10 border border-primary/20 px-3 py-2">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-primary/70 mb-0.5">
+                                      Competicion
+                                    </p>
+                                    <p className="text-sm font-bold text-primary">
+                                      {competitionInfo}
+                                    </p>
+                                  </div>
+                                )}
+                                <div className="flex flex-wrap gap-3">
+                                  {[0, 1].map((slotIndex) => {
+                                    const patchArrayIndex = patchStartIndex + slotIndex;
+                                    const patchName = item.patches?.[patchArrayIndex] ?? null;
+                                    return (
+                                      <PatchSelector
+                                        key={`${item.id}-${patchArrayIndex}`}
+                                        orderItemId={item.id}
+                                        patchIndex={patchArrayIndex}
+                                        currentPatchName={patchName}
+                                        patchImageUrl={patchName ? patchMap[patchName] ?? null : null}
+                                        allPatches={patchesData || []}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              </>
+                            );
+                          })()}
                         </td>
                         <td className="p-4">
                           <span className="text-xl font-black text-foreground uppercase tracking-widest">

@@ -136,7 +136,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
           : `<div class="placeholder">Sin imagen</div>`
 
         const patches = (item.patches ?? [])
-          .filter(Boolean)
+          .filter((patchName): patchName is string => !!patchName && patchName in patchMap)
           .slice(0, 2)
           .map((patchName) => {
             const patchImage = patchMap[patchName]
