@@ -13,7 +13,7 @@ export const revalidate = 60
 
 type Props = {
   params: Promise<{ category: string }>
-  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string; sizes?: string }>
+  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string; sizes?: string; mujeres?: string }>
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -46,6 +46,11 @@ function hasWorldCupName(product: ProductRecord) {
   return product.name.toLowerCase().includes("mundial")
 }
 
+function hasMujeresName(product: ProductRecord) {
+  const n = product.name.toLowerCase()
+  return n.includes("mujer") || n.includes("woman")
+}
+
 function extractAvailableSizes(products: ProductRecord[]): string[] {
   const found = new Set<string>()
   for (const p of products) {
@@ -71,7 +76,10 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     worldCup: worldCupParam,
     page: pageParam,
     sizes: sizesParam,
+    mujeres: mujeresParam,
   } = await searchParams
+
+  const isMujeres = mujeresParam === "1"
 
   const selectedSizes: string[] = sizesParam
     ? sizesParam.split(",").map((s) => s.trim()).filter(Boolean)
@@ -137,6 +145,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     if (sportSlug) params.set("sport", sportSlug)
     if (activeSport === "soccer" && activeSoccerType) params.set("soccerType", activeSoccerType)
     if (activeWorldCupMode) params.set("worldCup", "1")
+    if (isMujeres) params.set("mujeres", "1")
     if (selectedSizes.length > 0) params.set("sizes", selectedSizes.join(","))
     if (page > 1) params.set("page", String(page))
     const qs = params.toString()
@@ -161,10 +170,11 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
       const withStock = ((data ?? []) as ProductRecord[]).filter(hasImmediateStock)
       const worldCupFiltered = activeWorldCupMode ? withStock.filter(hasWorldCupName) : withStock
-      availableSizes = extractAvailableSizes(worldCupFiltered)
+      const mujeresFiltered = isMujeres ? worldCupFiltered.filter(hasMujeresName) : worldCupFiltered
+      availableSizes = extractAvailableSizes(mujeresFiltered)
       const filteredList = selectedSizes.length > 0
-        ? worldCupFiltered.filter((p) => hasSizes(p, selectedSizes))
-        : worldCupFiltered
+        ? mujeresFiltered.filter((p) => hasSizes(p, selectedSizes))
+        : mujeresFiltered
       totalProducts = filteredList.length
       totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
 
@@ -178,14 +188,16 @@ export default async function CatalogPage({ params, searchParams }: Props) {
       showingStart = totalProducts === 0 ? 0 : startIndex + 1
       showingEnd = Math.min(totalProducts, startIndex + paginatedProducts.length)
     } else {
-      if (activeWorldCupMode) {
+      if (activeWorldCupMode || isMujeres) {
         const { data, error } = await dbQuery
 
         if (error) {
           throw error
         }
 
-        const filteredList = ((data ?? []) as ProductRecord[]).filter(hasWorldCupName)
+        let filteredList = (data ?? []) as ProductRecord[]
+        if (activeWorldCupMode) filteredList = filteredList.filter(hasWorldCupName)
+        if (isMujeres) filteredList = filteredList.filter(hasMujeresName)
         totalProducts = filteredList.length
         totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
 
@@ -255,6 +267,10 @@ export default async function CatalogPage({ params, searchParams }: Props) {
       productList = productList.filter(hasWorldCupName)
     }
 
+    if (isMujeres) {
+      productList = productList.filter(hasMujeresName)
+    }
+
     if (category === "immediate") {
       availableSizes = extractAvailableSizes(productList)
       if (selectedSizes.length > 0) {
@@ -282,7 +298,15 @@ export default async function CatalogPage({ params, searchParams }: Props) {
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
           Catalogo
         </p>
-        <h1 className="text-4xl font-bold text-foreground md:text-5xl">{label}</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-4xl font-bold text-foreground md:text-5xl">{label}</h1>
+          {isMujeres && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider"
+              style={{ borderColor: "rgba(244,63,94,0.4)", background: "linear-gradient(135deg,rgba(244,63,94,0.08),rgba(168,85,247,0.08))", color: "rgb(225,29,72)" }}>
+              ✦ Colección Femenina
+            </span>
+          )}
+        </div>
         <p className="mt-2 text-sm text-muted-foreground">
           {totalProducts} producto{totalProducts !== 1 ? "s" : ""} disponible{totalProducts !== 1 ? "s" : ""}
         </p>
