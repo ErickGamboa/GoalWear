@@ -11,6 +11,8 @@ interface CatalogSportFilterProps {
   activeSoccerType?: SoccerType | null
   activeWorldCupMode?: boolean
   category: string
+  availableSizes?: string[]
+  selectedSizes?: string[]
 }
 
 const FILTERABLE_CATEGORIES = new Set(["immediate", "preorder"])
@@ -20,6 +22,8 @@ export function CatalogSportFilter({
   activeSoccerType,
   activeWorldCupMode,
   category,
+  availableSizes = [],
+  selectedSizes = [],
 }: CatalogSportFilterProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -36,6 +40,8 @@ export function CatalogSportFilter({
   ) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set("sport", SPORT_ID_TO_SLUG[nextSport])
+    params.delete("sizes")
+    params.delete("page")
 
     if (nextSport === "soccer" && nextSoccerType) {
       params.set("soccerType", nextSoccerType)
@@ -68,6 +74,20 @@ export function CatalogSportFilter({
   const handleWorldCupToggle = (checked: boolean) => {
     if (activeSport !== "soccer" || activeSoccerType !== "selection") return
     router.push(buildUrl("soccer", "selection", checked))
+  }
+
+  const handleSizeToggle = (size: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("page")
+    const next = selectedSizes.includes(size)
+      ? selectedSizes.filter((s) => s !== size)
+      : [...selectedSizes, size]
+    if (next.length > 0) {
+      params.set("sizes", next.join(","))
+    } else {
+      params.delete("sizes")
+    }
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   return (
@@ -237,6 +257,51 @@ export function CatalogSportFilter({
               />
             </div>
           )}
+        </div>
+      )}
+
+      {category === "immediate" && availableSizes.length > 0 && (
+        <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-3 mb-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
+              Talla
+            </p>
+            {selectedSizes.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams.toString())
+                  params.delete("sizes")
+                  params.delete("page")
+                  router.push(`${pathname}?${params.toString()}`)
+                }}
+                className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {availableSizes.map((size) => {
+              const isActive = selectedSizes.includes(size)
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => handleSizeToggle(size)}
+                  aria-pressed={isActive}
+                  className={cn(
+                    "h-10 min-w-[44px] rounded-xl border-2 px-3 text-xs font-bold uppercase tracking-wide transition-all duration-200",
+                    isActive
+                      ? "border-foreground bg-foreground text-background shadow-md scale-105"
+                      : "border-border/60 bg-background text-foreground hover:border-foreground/60 hover:scale-105"
+                  )}
+                >
+                  {size}
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
     </section>

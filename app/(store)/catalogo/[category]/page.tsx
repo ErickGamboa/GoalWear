@@ -13,7 +13,7 @@ export const revalidate = 60
 
 type Props = {
   params: Promise<{ category: string }>
-  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string }>
+  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string; sizes?: string }>
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -36,12 +36,30 @@ type ProductRecord = Product & {
   product_sizes?: { size: string; stock: number }[]
 }
 
+const SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL", "4XL"]
+
 function hasImmediateStock(product: ProductRecord) {
   return product.product_sizes?.some((size) => size.stock > 0) ?? false
 }
 
 function hasWorldCupName(product: ProductRecord) {
   return product.name.toLowerCase().includes("mundial")
+}
+
+function extractAvailableSizes(products: ProductRecord[]): string[] {
+  const found = new Set<string>()
+  for (const p of products) {
+    for (const ps of p.product_sizes ?? []) {
+      if (ps.stock > 0) found.add(ps.size)
+    }
+  }
+  return SIZE_ORDER.filter((s) => found.has(s))
+}
+
+function hasSizes(product: ProductRecord, sizes: string[]): boolean {
+  return sizes.some((size) =>
+    product.product_sizes?.some((ps) => ps.size === size && ps.stock > 0)
+  )
 }
 
 export default async function CatalogPage({ params, searchParams }: Props) {
@@ -52,7 +70,12 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     soccerType: soccerTypeParam,
     worldCup: worldCupParam,
     page: pageParam,
+    sizes: sizesParam,
   } = await searchParams
+
+  const selectedSizes: string[] = sizesParam
+    ? sizesParam.split(",").map((s) => s.trim()).filter(Boolean)
+    : []
   const category = SLUG_TO_CATEGORY[slug]
   if (!category) notFound()
 
@@ -114,6 +137,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     if (sportSlug) params.set("sport", sportSlug)
     if (activeSport === "soccer" && activeSoccerType) params.set("soccerType", activeSoccerType)
     if (activeWorldCupMode) params.set("worldCup", "1")
+    if (selectedSizes.length > 0) params.set("sizes", selectedSizes.join(","))
     if (page > 1) params.set("page", String(page))
     const qs = params.toString()
     return qs ? `/catalogo/${slug}?${qs}` : `/catalogo/${slug}`
@@ -125,6 +149,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   let currentPage = requestedPage
   let showingStart = 0
   let showingEnd = 0
+  let availableSizes: string[] = []
 
   if (!query) {
     if (category === "immediate") {
@@ -134,8 +159,12 @@ export default async function CatalogPage({ params, searchParams }: Props) {
         throw error
       }
 
-      const productList = ((data ?? []) as ProductRecord[]).filter(hasImmediateStock)
-      const filteredList = activeWorldCupMode ? productList.filter(hasWorldCupName) : productList
+      const withStock = ((data ?? []) as ProductRecord[]).filter(hasImmediateStock)
+      const worldCupFiltered = activeWorldCupMode ? withStock.filter(hasWorldCupName) : withStock
+      availableSizes = extractAvailableSizes(worldCupFiltered)
+      const filteredList = selectedSizes.length > 0
+        ? worldCupFiltered.filter((p) => hasSizes(p, selectedSizes))
+        : worldCupFiltered
       totalProducts = filteredList.length
       totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
 
@@ -226,6 +255,13 @@ export default async function CatalogPage({ params, searchParams }: Props) {
       productList = productList.filter(hasWorldCupName)
     }
 
+    if (category === "immediate") {
+      availableSizes = extractAvailableSizes(productList)
+      if (selectedSizes.length > 0) {
+        productList = productList.filter((p) => hasSizes(p, selectedSizes))
+      }
+    }
+
     totalProducts = productList.length
     totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
 
@@ -262,6 +298,8 @@ export default async function CatalogPage({ params, searchParams }: Props) {
         activeSoccerType={isSportFilterEnabled ? activeSoccerType : null}
         activeWorldCupMode={activeWorldCupMode}
         category={category}
+        availableSizes={availableSizes}
+        selectedSizes={selectedSizes}
       />
 
       {paginatedProducts.length > 0 ? (
