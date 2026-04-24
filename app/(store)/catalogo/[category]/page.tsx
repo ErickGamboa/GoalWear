@@ -122,6 +122,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     .from("products")
     .select(PRODUCT_COLUMNS, { count: "exact" })
     .eq("category", category)
+    .order("sort_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false })
 
   if (activeSport) {

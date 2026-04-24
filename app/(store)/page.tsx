@@ -27,6 +27,7 @@ async function getFeaturedProducts(
           product_sizes (size, stock)`
         )
         .eq("category", category)
+        .order("sort_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false })
 
       // default: show only soccer for jersey categories; skip in mujeres mode (all sports)

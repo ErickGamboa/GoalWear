@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import Link from "next/link"
-import { Plus, Search, X } from "lucide-react"
+import { Plus, Search, X, ArrowUpDown } from "lucide-react"
 import { CATEGORY_LABELS, SPORT_LABELS } from "@/lib/types"
 import type { Product } from "@/lib/types"
 import { DeleteProductButton } from "./delete-product-button"
@@ -37,12 +37,20 @@ export function ProductsClient({ products }: { products: Product[] }) {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Productos</h1>
-        <Button asChild>
-          <Link href="/admin/productos/nuevo">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Producto
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link href="/admin/productos/ordenar">
+              <ArrowUpDown className="mr-2 h-4 w-4" />
+              Ordenar
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/productos/nuevo">
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Producto
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="mb-4 relative">

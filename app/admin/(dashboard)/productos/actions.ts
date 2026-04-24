@@ -3,6 +3,35 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 
+export async function updateProductSortOrder(
+  orderedIds: string[]
+): Promise<{ success: boolean; message?: string }> {
+  const supabase = await createClient()
+  const updates = orderedIds.map((id, i) => ({ id, sort_order: i + 1 }))
+
+  // Run updates in parallel batches of 50 to avoid overwhelming the connection
+  const BATCH = 50
+  for (let i = 0; i < updates.length; i += BATCH) {
+    const results = await Promise.all(
+      updates.slice(i, i + BATCH).map(({ id, sort_order }) =>
+        supabase.from("products").update({ sort_order }).eq("id", id)
+      )
+    )
+    const failed = results.find((r) => r.error)
+    if (failed?.error) {
+      console.error("Error updating sort order:", failed.error)
+      return { success: false, message: "Error al guardar el orden." }
+    }
+  }
+
+  revalidatePath("/admin/productos")
+  revalidatePath("/")
+  revalidatePath("/catalogo/entrega-inmediata")
+  revalidatePath("/catalogo/pedido-previo")
+  revalidatePath("/catalogo/accesorios")
+  return { success: true }
+}
+
 export async function deleteProduct(
   productId: string
 ): Promise<{ success: boolean; message?: string }> {
