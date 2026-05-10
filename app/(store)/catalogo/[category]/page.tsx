@@ -13,7 +13,7 @@ export const revalidate = 60
 
 type Props = {
   params: Promise<{ category: string }>
-  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string; sizes?: string; mujeres?: string }>
+  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string; sizes?: string; kSizes?: string; mujeres?: string }>
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -76,6 +76,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     worldCup: worldCupParam,
     page: pageParam,
     sizes: sizesParam,
+    kSizes: kSizesParam,
     mujeres: mujeresParam,
   } = await searchParams
 
@@ -83,6 +84,9 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
   const selectedSizes: string[] = sizesParam
     ? sizesParam.split(",").map((s) => s.trim()).filter(Boolean)
+    : []
+  const selectedKidsSizes: string[] = kSizesParam
+    ? kSizesParam.split(",").map((s) => s.trim()).filter(Boolean)
     : []
   const category = SLUG_TO_CATEGORY[slug]
   if (!category) notFound()
@@ -148,6 +152,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     if (activeWorldCupMode) params.set("worldCup", "1")
     if (isMujeres) params.set("mujeres", "1")
     if (selectedSizes.length > 0) params.set("sizes", selectedSizes.join(","))
+    if (selectedKidsSizes.length > 0) params.set("kSizes", selectedKidsSizes.join(","))
     if (page > 1) params.set("page", String(page))
     const qs = params.toString()
     return qs ? `/catalogo/${slug}?${qs}` : `/catalogo/${slug}`
@@ -173,8 +178,12 @@ export default async function CatalogPage({ params, searchParams }: Props) {
       const worldCupFiltered = activeWorldCupMode ? withStock.filter(hasWorldCupName) : withStock
       const mujeresFiltered = isMujeres ? worldCupFiltered.filter(hasMujeresName) : worldCupFiltered
       availableSizes = extractAvailableSizes(mujeresFiltered)
-      const filteredList = selectedSizes.length > 0
-        ? mujeresFiltered.filter((p) => hasSizes(p, selectedSizes))
+      const filteredList = (selectedSizes.length > 0 || selectedKidsSizes.length > 0)
+        ? mujeresFiltered.filter((p) => {
+            const isKids = p.name.toLowerCase().includes("niñ")
+            if (isKids) return selectedKidsSizes.length > 0 && hasSizes(p, selectedKidsSizes)
+            return selectedSizes.length > 0 && hasSizes(p, selectedSizes)
+          })
         : mujeresFiltered
       totalProducts = filteredList.length
       totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE))
@@ -274,8 +283,12 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
     if (category === "immediate") {
       availableSizes = extractAvailableSizes(productList)
-      if (selectedSizes.length > 0) {
-        productList = productList.filter((p) => hasSizes(p, selectedSizes))
+      if (selectedSizes.length > 0 || selectedKidsSizes.length > 0) {
+        productList = productList.filter((p) => {
+          const isKids = p.name.toLowerCase().includes("niñ")
+          if (isKids) return selectedKidsSizes.length > 0 && hasSizes(p, selectedKidsSizes)
+          return selectedSizes.length > 0 && hasSizes(p, selectedSizes)
+        })
       }
     }
 
@@ -325,6 +338,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
         category={category}
         availableSizes={availableSizes}
         selectedSizes={selectedSizes}
+        selectedKidsSizes={selectedKidsSizes}
       />
 
       {paginatedProducts.length > 0 ? (

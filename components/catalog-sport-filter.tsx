@@ -13,6 +13,7 @@ interface CatalogSportFilterProps {
   category: string
   availableSizes?: string[]
   selectedSizes?: string[]
+  selectedKidsSizes?: string[]
 }
 
 const FILTERABLE_CATEGORIES = new Set(["immediate", "preorder"])
@@ -24,6 +25,7 @@ export function CatalogSportFilter({
   category,
   availableSizes = [],
   selectedSizes = [],
+  selectedKidsSizes = [],
 }: CatalogSportFilterProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -86,6 +88,20 @@ export function CatalogSportFilter({
       params.set("sizes", next.join(","))
     } else {
       params.delete("sizes")
+    }
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleKidsSizeToggle = (size: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("page")
+    const next = selectedKidsSizes.includes(size)
+      ? selectedKidsSizes.filter((s) => s !== size)
+      : [...selectedKidsSizes, size]
+    if (next.length > 0) {
+      params.set("kSizes", next.join(","))
+    } else {
+      params.delete("kSizes")
     }
     router.push(`${pathname}?${params.toString()}`)
   }
@@ -262,46 +278,97 @@ export function CatalogSportFilter({
 
       {category === "immediate" && availableSizes.length > 0 && (
         <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="flex items-center gap-3 mb-3">
-            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-muted-foreground">
-              Talla
-            </p>
-            {selectedSizes.length > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  const params = new URLSearchParams(searchParams.toString())
-                  params.delete("sizes")
-                  params.delete("page")
-                  router.push(`${pathname}?${params.toString()}`)
-                }}
-                className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
-              >
-                Limpiar
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {availableSizes.map((size) => {
-              const isActive = selectedSizes.includes(size)
-              return (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => handleSizeToggle(size)}
-                  aria-pressed={isActive}
-                  className={cn(
-                    "h-10 min-w-[44px] rounded-xl border-2 px-3 text-xs font-bold uppercase tracking-wide transition-all duration-200",
-                    isActive
-                      ? "border-foreground bg-foreground text-background shadow-md scale-105"
-                      : "border-border/60 bg-background text-foreground hover:border-foreground/60 hover:scale-105"
-                  )}
-                >
-                  {size}
-                </button>
-              )
-            })}
-          </div>
+          {(() => {
+            const KIDS_SIZE_DISPLAY: Record<string, string> = {
+              XXS: "16 = 2-3 años",
+              XS: "18 = 4-5 años",
+              S: "20 = 6-7 años",
+              M: "22 = 7-8 años",
+              L: "24 = 8-9 años",
+              XL: "26 = 9-10 años",
+              XXL: "28 = 11-12 años",
+            }
+            const KIDS_SIZES = new Set(["XXS", "XS", "S", "M", "L", "XL", "XXL"])
+            const ADULT_SIZES = new Set(["S", "M", "L", "XL", "2XL", "3XL", "4XL"])
+            const kidsSizes = availableSizes.filter((s) => KIDS_SIZES.has(s))
+            const adultSizes = availableSizes.filter((s) => ADULT_SIZES.has(s))
+            return (
+              <div className="flex items-start justify-between gap-6">
+                {kidsSizes.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/70">
+                        Tallas niños:
+                      </p>
+                      {selectedKidsSizes.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const params = new URLSearchParams(searchParams.toString())
+                            params.delete("kSizes")
+                            params.delete("page")
+                            router.push(`${pathname}?${params.toString()}`)
+                          }}
+                          className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+                        >
+                          Limpiar
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {kidsSizes.map((size) => {
+                        const isActive = selectedKidsSizes.includes(size)
+                        return (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => handleKidsSizeToggle(size)}
+                            aria-pressed={isActive}
+                            className={cn(
+                              "h-10 rounded-xl border-2 px-3 text-xs font-bold transition-all duration-200",
+                              isActive
+                                ? "border-foreground bg-foreground text-background shadow-md scale-105"
+                                : "border-border/60 bg-background text-foreground hover:border-foreground/60 hover:scale-105"
+                            )}
+                          >
+                            {KIDS_SIZE_DISPLAY[size]}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+                {adultSizes.length > 0 && (
+                  <div className="flex flex-col gap-2 ml-auto items-end">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/70">
+                      Tallas adultos:
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-end">
+                      {adultSizes.map((size) => {
+                        const isActive = selectedSizes.includes(size)
+                        return (
+                          <button
+                            key={`adult-${size}`}
+                            type="button"
+                            onClick={() => handleSizeToggle(size)}
+                            aria-pressed={isActive}
+                            className={cn(
+                              "h-10 min-w-[44px] rounded-xl border-2 px-3 text-xs font-bold uppercase tracking-wide transition-all duration-200",
+                              isActive
+                                ? "border-foreground bg-foreground text-background shadow-md scale-105"
+                                : "border-border/60 bg-background text-foreground hover:border-foreground/60 hover:scale-105"
+                            )}
+                          >
+                            {size}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
         </div>
       )}
     </section>

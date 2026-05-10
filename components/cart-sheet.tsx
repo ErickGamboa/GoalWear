@@ -18,13 +18,13 @@ export function CartSheet() {
   const [isValidating, setIsValidating] = useState(false)
 
   const KIDS_SIZE_DISPLAY: Record<string, string> = {
-    XXS: "XXS = 16",
-    XS: "XS = 18",
-    S: "S = 20",
-    M: "M = 22",
-    L: "L = 24",
-    XL: "XL = 26",
-    XXL: "XXL = 28",
+    XXS: "16 = 2-3 años",
+    XS: "18 = 4-5 años",
+    S: "20 = 6-7 años",
+    M: "22 = 7-8 años",
+    L: "24 = 8-9 años",
+    XL: "26 = 9-10 años",
+    XXL: "28 = 11-12 años",
   }
 
   const formatSize = (productName: string, size: string) => {
