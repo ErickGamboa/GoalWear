@@ -99,17 +99,25 @@ export default async function HomePage({
 
   const isSearching = !!query
 
-  const immediateHref = isWorldCup
+  const immediateHref = isSearching
+    ? `/catalogo/entrega-inmediata?q=${encodeURIComponent(query!)}`
+    : isWorldCup
     ? "/catalogo/entrega-inmediata?sport=futbol&soccerType=selection&worldCup=1"
     : isMujeres
     ? "/catalogo/entrega-inmediata?sport=futbol&mujeres=1"
     : "/catalogo/entrega-inmediata"
 
-  const preorderHref = isWorldCup
+  const preorderHref = isSearching
+    ? `/catalogo/pedido-previo?q=${encodeURIComponent(query!)}`
+    : isWorldCup
     ? "/catalogo/pedido-previo?sport=futbol&soccerType=selection&worldCup=1"
     : isMujeres
     ? "/catalogo/pedido-previo?sport=futbol&mujeres=1"
     : "/catalogo/pedido-previo"
+
+  const accessoriesHref = isSearching
+    ? `/catalogo/accesorios?q=${encodeURIComponent(query!)}`
+    : "/catalogo/accesorios"
 
   return (
     <>
@@ -162,7 +170,7 @@ export default async function HomePage({
         <CategorySection
           title="Accesorios"
           description="Jerseys, abrigos, gorras, calzado y más"
-          href="/catalogo/accesorios"
+          href={accessoriesHref}
           products={accessories}
           isSearching={isSearching}
           isFiltered={isWorldCup || isMujeres}
@@ -196,14 +204,12 @@ function CategorySection({
           <h2 className="text-2xl font-bold text-foreground md:text-3xl">{title}</h2>
           <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
         </div>
-        {!isSearching && (
-          <Button asChild variant="ghost" className="hidden rounded-full sm:flex transition-all duration-300 hover:bg-foreground hover:text-background">
-            <Link href={href}>
-              Ver todos
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        )}
+        <Button asChild variant="ghost" className="hidden rounded-full sm:flex transition-all duration-300 hover:bg-foreground hover:text-background">
+          <Link href={href}>
+            Ver todos
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </Link>
+        </Button>
       </div>
 
       {products.length > 0 ? (
@@ -216,16 +222,14 @@ function CategorySection({
         </div>
       )}
 
-      {!isSearching && (
-        <div className="mt-6 text-center sm:hidden">
-          <Button asChild variant="outline" size="sm" className="rounded-full">
-            <Link href={href}>
-              Ver todos
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      )}
+      <div className="mt-6 text-center sm:hidden">
+        <Button asChild variant="outline" size="sm" className="rounded-full">
+          <Link href={href}>
+            Ver todos
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
     </section>
   )
 }
