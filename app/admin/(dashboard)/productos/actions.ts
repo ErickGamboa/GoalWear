@@ -32,6 +32,25 @@ export async function updateProductSortOrder(
   return { success: true }
 }
 
+export async function toggleBestseller(
+  productId: string,
+  current: boolean
+): Promise<{ success: boolean; message?: string }> {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("products")
+    .update({ is_bestseller: !current })
+    .eq("id", productId)
+
+  if (error) {
+    return { success: false, message: "Error al actualizar" }
+  }
+
+  revalidatePath("/admin/productos")
+  revalidatePath("/")
+  return { success: true }
+}
+
 export async function deleteProduct(
   productId: string
 ): Promise<{ success: boolean; message?: string }> {

@@ -12,10 +12,11 @@ export const revalidate = 60
 async function getFeaturedProducts(
   query?: string,
   worldCup?: boolean,
-  mujeres?: boolean
+  mujeres?: boolean,
+  masVendidos?: boolean
 ) {
   const supabase = await createClient()
-  const isFiltered = worldCup || mujeres
+  const isFiltered = worldCup || mujeres || masVendidos
 
   const categories = ["immediate", "preorder", "accessory"]
   const results = await Promise.all(
@@ -23,7 +24,7 @@ async function getFeaturedProducts(
       let dbQuery = supabase
         .from("products")
         .select(
-          `id, name, price, image_url, image_url_2, image_url_3, team, code, sport, category, has_stock,
+          `id, name, price, image_url, image_url_2, image_url_3, team, code, sport, category, has_stock, is_bestseller,
           product_sizes (size, stock)`
         )
         .eq("category", category)
@@ -31,8 +32,12 @@ async function getFeaturedProducts(
         .order("created_at", { ascending: false })
 
       // default: show only soccer for jersey categories; skip in mujeres mode (all sports)
-      if (!mujeres && (category === "immediate" || category === "preorder")) {
+      if (!mujeres && !masVendidos && (category === "immediate" || category === "preorder")) {
         dbQuery = dbQuery.eq("sport", "soccer")
+      }
+
+      if (masVendidos) {
+        dbQuery = dbQuery.eq("is_bestseller", true)
       }
 
       if (query && !mujeres) {
@@ -85,19 +90,20 @@ async function getFeaturedProducts(
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; worldCup?: string; mujeres?: string; sport?: string; soccerType?: string }>
+  searchParams: Promise<{ q?: string; worldCup?: string; mujeres?: string; sport?: string; soccerType?: string; masVendidos?: string }>
 }) {
-  const { q: query, worldCup: wcParam, mujeres: mujeresParam, sport, soccerType } = await searchParams
+  const { q: query, worldCup: wcParam, mujeres: mujeresParam, sport, soccerType, masVendidos: masVendidosParam } = await searchParams
   const isWorldCup = wcParam === "1" && sport === "futbol" && soccerType === "selection"
   const isMujeres = mujeresParam === "1"
+  const isMasVendidos = masVendidosParam === "1"
+  const isSearching = !!query
 
   const { immediate, preorder, accessories } = await getFeaturedProducts(
     query,
     isWorldCup,
-    isMujeres
+    isMujeres,
+    isMasVendidos
   )
-
-  const isSearching = !!query
 
   const immediateHref = isSearching
     ? `/catalogo/entrega-inmediata?q=${encodeURIComponent(query!)}`
@@ -105,6 +111,8 @@ export default async function HomePage({
     ? "/catalogo/entrega-inmediata?sport=futbol&soccerType=selection&worldCup=1"
     : isMujeres
     ? "/catalogo/entrega-inmediata?sport=futbol&mujeres=1"
+    : isMasVendidos
+    ? "/catalogo/entrega-inmediata?masVendidos=1"
     : "/catalogo/entrega-inmediata"
 
   const preorderHref = isSearching
@@ -113,11 +121,15 @@ export default async function HomePage({
     ? "/catalogo/pedido-previo?sport=futbol&soccerType=selection&worldCup=1"
     : isMujeres
     ? "/catalogo/pedido-previo?sport=futbol&mujeres=1"
+    : isMasVendidos
+    ? "/catalogo/pedido-previo?masVendidos=1"
     : "/catalogo/pedido-previo"
 
   const accessoriesHref = isSearching
     ? `/catalogo/accesorios?q=${encodeURIComponent(query!)}`
     : "/catalogo/accesorios"
+
+  const isFiltered = isWorldCup || isMujeres || isMasVendidos
 
   return (
     <>
@@ -133,14 +145,16 @@ export default async function HomePage({
           </div>
         ) : (
           <Suspense>
-            <HomeFilters isWorldCup={isWorldCup} isMujeres={isMujeres} />
+            <HomeFilters isWorldCup={isWorldCup} isMujeres={isMujeres} isMasVendidos={isMasVendidos} />
           </Suspense>
         )}
 
         <CategorySection
           title="Entrega Inmediata"
           description={
-            isMujeres
+            isMasVendidos
+              ? "Los más vendidos con stock disponible."
+              : isMujeres
               ? "Camisetas femeninas disponibles para envío inmediato."
               : isWorldCup
               ? "Selecciones del Mundial disponibles en stock."
@@ -149,13 +163,15 @@ export default async function HomePage({
           href={immediateHref}
           products={immediate}
           isSearching={isSearching}
-          isFiltered={isWorldCup || isMujeres}
+          isFiltered={isFiltered}
         />
 
         <CategorySection
           title="Pedido Previo"
           description={
-            isMujeres
+            isMasVendidos
+              ? "Los más pedidos para personalizar con tu nombre."
+              : isMujeres
               ? "Camisetas femeninas personalizadas con nombre y numero."
               : isWorldCup
               ? "Selecciones del Mundial para personalizar con tu nombre."
@@ -164,17 +180,19 @@ export default async function HomePage({
           href={preorderHref}
           products={preorder}
           isSearching={isSearching}
-          isFiltered={isWorldCup || isMujeres}
+          isFiltered={isFiltered}
         />
 
-        <CategorySection
-          title="Accesorios"
-          description="Jerseys, abrigos, gorras, calzado y más"
-          href={accessoriesHref}
-          products={accessories}
-          isSearching={isSearching}
-          isFiltered={isWorldCup || isMujeres}
-        />
+        {!isMasVendidos && (
+          <CategorySection
+            title="Accesorios"
+            description="Jerseys, abrigos, gorras, calzado y más"
+            href={accessoriesHref}
+            products={accessories}
+            isSearching={isSearching}
+            isFiltered={isWorldCup || isMujeres}
+          />
+        )}
       </div>
     </>
   )

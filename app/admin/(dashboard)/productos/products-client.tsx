@@ -16,6 +16,7 @@ import { Plus, Search, X, ArrowUpDown } from "lucide-react"
 import { CATEGORY_LABELS, SPORT_LABELS } from "@/lib/types"
 import type { Product } from "@/lib/types"
 import { DeleteProductButton } from "./delete-product-button"
+import { StarProductButton } from "./star-product-button"
 import { formatCurrency } from "@/lib/utils"
 
 export function ProductsClient({ products }: { products: Product[] }) {
@@ -127,6 +128,7 @@ export function ProductsClient({ products }: { products: Product[] }) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <StarProductButton productId={product.id} isBestseller={product.is_bestseller ?? false} />
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/admin/productos/${product.id}`}>Editar</Link>
                         </Button>

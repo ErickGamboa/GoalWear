@@ -14,6 +14,7 @@ export type Product = {
   sport: SportType
   soccer_type: SoccerType | null
   has_stock: boolean
+  is_bestseller?: boolean
   created_at: string
   sort_order?: number | null
 }

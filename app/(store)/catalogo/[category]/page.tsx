@@ -13,7 +13,7 @@ export const revalidate = 60
 
 type Props = {
   params: Promise<{ category: string }>
-  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string; sizes?: string; kSizes?: string; mujeres?: string }>
+  searchParams: Promise<{ q?: string; sport?: string; soccerType?: string; worldCup?: string; page?: string; sizes?: string; kSizes?: string; mujeres?: string; masVendidos?: string }>
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
 
 const PAGE_SIZE = 12
 const PRODUCT_COLUMNS = `
-  id, name, price, image_url, image_url_2, image_url_3, team, code, sport, soccer_type, category, has_stock, created_at,
+  id, name, price, image_url, image_url_2, image_url_3, team, code, sport, soccer_type, category, has_stock, is_bestseller, created_at,
   product_sizes (size, stock)
 `
 type ProductRecord = Product & {
@@ -78,9 +78,11 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     sizes: sizesParam,
     kSizes: kSizesParam,
     mujeres: mujeresParam,
+    masVendidos: masVendidosParam,
   } = await searchParams
 
   const isMujeres = mujeresParam === "1"
+  const isMasVendidos = masVendidosParam === "1"
 
   const selectedSizes: string[] = sizesParam
     ? sizesParam.split(",").map((s) => s.trim()).filter(Boolean)
@@ -103,9 +105,9 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   const isSportFilterEnabled = category === "immediate" || category === "preorder"
   if (isSportFilterEnabled && !sportSlug) {
     const params = new URLSearchParams()
-    if (query) {
-      params.set("q", query)
-    }
+    if (query) params.set("q", query)
+    if (isMujeres) params.set("mujeres", "1")
+    if (isMasVendidos) params.set("masVendidos", "1")
     params.set("sport", "futbol")
     const search = params.toString()
     redirect(`/catalogo/${slug}?${search}`)
@@ -140,6 +142,10 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     }
   }
 
+  if (isMasVendidos) {
+    dbQuery = dbQuery.eq("is_bestseller", true)
+  }
+
   if (query) {
     dbQuery = dbQuery.or(`name.ilike.%${query}%,team.ilike.%${query}%,code.ilike.%${query}%`)
   }
@@ -151,6 +157,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
     if (activeSport === "soccer" && activeSoccerType) params.set("soccerType", activeSoccerType)
     if (activeWorldCupMode) params.set("worldCup", "1")
     if (isMujeres) params.set("mujeres", "1")
+    if (isMasVendidos) params.set("masVendidos", "1")
     if (selectedSizes.length > 0) params.set("sizes", selectedSizes.join(","))
     if (selectedKidsSizes.length > 0) params.set("kSizes", selectedKidsSizes.join(","))
     if (page > 1) params.set("page", String(page))

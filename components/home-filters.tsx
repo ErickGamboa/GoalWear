@@ -3,34 +3,40 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
-import { Sparkles } from "lucide-react"
+import { Sparkles, Star } from "lucide-react"
 
 export function HomeFilters({
   isWorldCup,
   isMujeres,
+  isMasVendidos,
 }: {
   isWorldCup: boolean
   isMujeres: boolean
+  isMasVendidos: boolean
 }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const toggle = (key: "worldCup" | "mujeres") => {
+  const toggle = (key: "worldCup" | "mujeres" | "masVendidos") => {
     const params = new URLSearchParams(searchParams.toString())
     params.delete("q")
     params.delete("worldCup")
     params.delete("mujeres")
     params.delete("sport")
     params.delete("soccerType")
-    const currentlyActive = key === "worldCup" ? isWorldCup : isMujeres
+    params.delete("masVendidos")
+    const currentlyActive =
+      key === "worldCup" ? isWorldCup : key === "mujeres" ? isMujeres : isMasVendidos
     if (!currentlyActive) {
       if (key === "worldCup") {
         params.set("sport", "futbol")
         params.set("soccerType", "selection")
         params.set("worldCup", "1")
-      } else {
+      } else if (key === "mujeres") {
         params.set("mujeres", "1")
+      } else {
+        params.set("masVendidos", "1")
       }
     }
     const qs = params.toString()
@@ -43,7 +49,7 @@ export function HomeFilters({
         Explorar
       </p>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-3xl mx-auto">
 
         {/* ── Modo Mundial ── */}
         <button
@@ -99,8 +105,6 @@ export function HomeFilters({
             </div>
           </div>
 
-
-          {/* shimmer on hover when inactive */}
           {!isWorldCup && (
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
           )}
@@ -171,6 +175,75 @@ export function HomeFilters({
           )}
 
           {!isMujeres && (
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+          )}
+        </button>
+
+        {/* ── Más Vendidos ── */}
+        <button
+          type="button"
+          onClick={() => toggle("masVendidos")}
+          className={cn(
+            "group relative flex-1 overflow-hidden rounded-2xl border-2 px-6 py-5 text-left transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+            isMasVendidos
+              ? "shadow-2xl shadow-yellow-300/30 scale-[1.02]"
+              : "border-border/50 bg-muted/10 hover:border-foreground/20 hover:shadow-lg hover:scale-[1.02]"
+          )}
+          style={
+            isMasVendidos
+              ? {
+                  background:
+                    "linear-gradient(135deg, rgba(234,179,8,0.15) 0%, rgba(251,191,36,0.10) 50%, rgba(245,158,11,0.15) 100%)",
+                  borderColor: "rgba(234,179,8,0.45)",
+                }
+              : undefined
+          }
+        >
+          <div className="flex items-center gap-4">
+            <div
+              className={cn(
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-colors",
+                isMasVendidos
+                  ? "bg-gradient-to-br from-yellow-100 to-amber-100"
+                  : "bg-muted"
+              )}
+            >
+              <Star
+                className={cn(
+                  "h-6 w-6 transition-colors",
+                  isMasVendidos ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                )}
+              />
+            </div>
+            <div className="min-w-0">
+              <p
+                className={cn(
+                  "text-sm font-black uppercase tracking-widest leading-tight",
+                  isMasVendidos
+                    ? "bg-gradient-to-r from-yellow-500 to-amber-500 bg-clip-text text-transparent"
+                    : "text-foreground"
+                )}
+              >
+                Más Vendidos
+              </p>
+              <p
+                className={cn(
+                  "text-[11px] mt-0.5 leading-tight",
+                  isMasVendidos ? "text-amber-500/80" : "text-muted-foreground"
+                )}
+              >
+                Favoritos de nuestros clientes
+              </p>
+            </div>
+          </div>
+
+          {isMasVendidos && (
+            <div className="absolute top-3 right-3 opacity-60">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            </div>
+          )}
+
+          {!isMasVendidos && (
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
           )}
         </button>
