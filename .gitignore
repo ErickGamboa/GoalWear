@@ -10,3 +10,10 @@ node_modules/
 .next/
 .env*.local
 .DS_Store
+
+# Image compression script artifacts
+backup-originales/
+preview/
+preview-fix/
+compress-progress.json
+fix-orientation-progress.json
