@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import type { MouseEvent } from "react"
 
-const WHATSAPP_PHONE = "50662411934"
+const WHATSAPP_PHONE = "50672407447"
 const WHATSAPP_MESSAGE = "Hola, quisiera consultar la disponibilidad de un producto."
 
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
