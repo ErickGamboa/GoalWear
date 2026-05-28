@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { compressImage } from "@/lib/compress-image"
 
 export function PatchForm() {
   const router = useRouter()
@@ -27,11 +28,12 @@ export function PatchForm() {
       
       let finalImageUrl = imageUrl
       if (imageFile) {
-        const ext = imageFile.name.split(".").pop()
+        const compressed = await compressImage(imageFile)
+        const ext = compressed.name.split(".").pop()
         const fileName = `patch-${Date.now()}.${ext}`
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("product-images")
-          .upload(fileName, imageFile)
+          .upload(fileName, compressed, { contentType: compressed.type })
 
         if (uploadError) throw uploadError
 

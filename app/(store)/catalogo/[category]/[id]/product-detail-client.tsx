@@ -215,6 +215,8 @@ export function ProductDetailClient({
                 <img
                   src={img}
                   alt={`${product.name} thumbnail ${i + 1}`}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                 />
               </button>
@@ -340,9 +342,11 @@ export function ProductDetailClient({
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl w-auto p-0 bg-transparent border-none">
-                <img 
-                  src={isKids ? "/tallas-ninos.jpeg" : "/tallas-hombre.jpeg"} 
+                <img
+                  src={isKids ? "/tallas-ninos.jpeg" : "/tallas-hombre.jpeg"}
                   alt={isKids ? "Guía de tallas niños" : "Guía de tallas hombre"}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-auto rounded-2xl"
                 />
               </DialogContent>

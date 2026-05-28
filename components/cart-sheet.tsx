@@ -103,6 +103,8 @@ export function CartSheet() {
                         <img
                           src={item.imageUrl || "/placeholder.svg"}
                           alt={item.productName}
+                          loading="lazy"
+                          decoding="async"
                           className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                         />
                       </div>

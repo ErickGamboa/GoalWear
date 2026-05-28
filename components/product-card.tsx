@@ -24,6 +24,8 @@ export function ProductCard({ product }: { product: Product }) {
           <img
             src={images[0] || "/placeholder.svg"}
             alt={product.name}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
           

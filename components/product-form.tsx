@@ -21,6 +21,7 @@ import { Loader2, Plus, X } from "lucide-react"
 import { toast } from "sonner"
 import type { ProductWithSizes, SoccerType, SportType } from "@/lib/types"
 import { SPORT_OPTIONS } from "@/lib/types"
+import { compressImage } from "@/lib/compress-image"
 
 const ADULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"]
 const KIDS_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"]
@@ -105,14 +106,15 @@ export function ProductForm({ product, mode }: Props) {
     try {
       const supabase = createClient()
 
-      // Upload images if files selected
+      // Upload images if files selected (compressed client-side before upload)
       const uploadImage = async (file: File | null, currentUrl: string) => {
         if (!file) return currentUrl
-        const ext = file.name.split(".").pop()
+        const compressed = await compressImage(file)
+        const ext = compressed.name.split(".").pop()
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("product-images")
-          .upload(fileName, file)
+          .upload(fileName, compressed, { contentType: compressed.type })
 
         if (uploadError) throw uploadError
 
