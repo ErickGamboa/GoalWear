@@ -150,23 +150,6 @@ export default async function HomePage({
         )}
 
         <CategorySection
-          title="Entrega Inmediata"
-          description={
-            isMasVendidos
-              ? "Los más vendidos con stock disponible."
-              : isMujeres
-              ? "Camisetas femeninas disponibles para envío inmediato."
-              : isWorldCup
-              ? "Selecciones del Mundial disponibles en stock."
-              : "Camisetas listas para enviar. Stock disponible."
-          }
-          href={immediateHref}
-          products={immediate}
-          isSearching={isSearching}
-          isFiltered={isFiltered}
-        />
-
-        <CategorySection
           title="Pedido Previo"
           description={
             isMasVendidos
@@ -183,10 +166,27 @@ export default async function HomePage({
           isFiltered={isFiltered}
         />
 
+        <CategorySection
+          title="Entrega Inmediata"
+          description={
+            isMasVendidos
+              ? "Los más vendidos con stock disponible."
+              : isMujeres
+              ? "Camisetas femeninas disponibles para envío inmediato."
+              : isWorldCup
+              ? "Selecciones del Mundial disponibles en stock."
+              : "Camisetas listas para enviar. Stock disponible."
+          }
+          href={immediateHref}
+          products={immediate}
+          isSearching={isSearching}
+          isFiltered={isFiltered}
+        />
+
         {!isMasVendidos && (
           <CategorySection
-            title="Accesorios"
-            description="Jerseys, abrigos, gorras, calzado y más"
+            title="Artículos Deportivos"
+            description="Espinilleras, medias, guantes, botellas y más"
             href={accessoriesHref}
             products={accessories}
             isSearching={isSearching}

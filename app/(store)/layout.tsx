@@ -11,7 +11,7 @@ export default function StoreLayout({
   children: React.ReactNode
 }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="dark">
       <div className="flex min-h-svh flex-col">
         <Suspense fallback={null}>
           <WorldCupOverlay />
