@@ -11,6 +11,7 @@ import { CATEGORY_LABELS } from "@/lib/types"
 import { formatCurrency, cn } from "@/lib/utils"
 import Image from "next/image"
 import { PatchSelector } from "./patch-selector"
+import { ItemEditor } from "./item-editor"
 
 type Props = {
   params: Promise<{ id: string }>
@@ -191,6 +192,7 @@ export default async function OrderDetailPage({ params }: Props) {
                     <th className="p-4 text-foreground">Name</th>
                     <th className="p-4 text-foreground">Characteristics</th>
                     <th className="p-4 text-right text-foreground">Subtotal</th>
+                    <th className="p-4 text-right text-foreground print:hidden">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -273,7 +275,7 @@ export default async function OrderDetailPage({ params }: Props) {
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground w-20">Version:</span>
-                              <span className={cn("font-bold px-2 py-0.5 rounded text-xs uppercase", 
+                              <span className={cn("font-bold px-2 py-0.5 rounded text-xs uppercase",
                                 isPlayerVersion ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800")}>
                                 {isPlayerVersion ? "Player" : "Fan"}
                               </span>
@@ -292,6 +294,17 @@ export default async function OrderDetailPage({ params }: Props) {
                         </td>
                         <td className="p-4 text-right font-bold text-lg text-foreground">
                           {formatCurrency(Number(item.subtotal))}
+                        </td>
+                        <td className="p-4 text-right print:hidden">
+                          <ItemEditor
+                            orderItemId={item.id}
+                            productName={item.product_name}
+                            initialCustomName={item.custom_name}
+                            initialCustomNumber={item.custom_number}
+                            initialSize={item.size}
+                            initialQuantity={item.quantity}
+                            triggerLabel="Editar"
+                          />
                         </td>
                       </tr>
                     );
