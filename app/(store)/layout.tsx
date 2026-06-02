@@ -12,7 +12,9 @@ export default function StoreLayout({
 }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark">
-      <div className="flex min-h-svh flex-col">
+      <div className="store-hero-bg" aria-hidden="true" />
+      <div className="store-hero-overlay" aria-hidden="true" />
+      <div className="relative z-10 flex min-h-svh flex-col">
         <Suspense fallback={null}>
           <WorldCupOverlay />
         </Suspense>

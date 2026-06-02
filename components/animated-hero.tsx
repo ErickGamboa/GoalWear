@@ -17,7 +17,7 @@ export function AnimatedHero() {
   }, [])
 
   return (
-    <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-background px-4 py-24 md:py-32">
+    <section className="relative -mt-16 md:-mt-[4.5rem] flex min-h-lvh items-center justify-center overflow-hidden bg-background px-4 py-24 md:py-32">
       <div className="text-center">
         <h1 
           className={`${inter.className} text-[12vw] uppercase tracking-tighter text-foreground leading-none md:text-[10vw] lg:text-[8vw] transition-all duration-1000 ease-out`}
