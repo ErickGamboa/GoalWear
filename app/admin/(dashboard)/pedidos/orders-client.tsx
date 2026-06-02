@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import type { OrderWithItems } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
@@ -73,6 +74,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
   const [activeTab, setActiveTab] = React.useState<"pending" | "history">("pending")
   const [fromDate, setFromDate] = React.useState("")
   const [toDate, setToDate] = React.useState("")
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
 
   const isDateInRange = React.useCallback(
     (createdAt: string) => {
@@ -104,15 +106,51 @@ export function OrdersClient({ orders, patchMap }: Props) {
   const filteredHistoryOrders = historyOrders.filter((order) => isDateInRange(order.created_at))
   const visibleOrders = activeTab === "pending" ? filteredPendingOrders : filteredHistoryOrders
 
+  const exportOrders = React.useMemo(() => {
+    if (selectedIds.size === 0) return visibleOrders
+    return visibleOrders.filter((o) => selectedIds.has(o.id))
+  }, [visibleOrders, selectedIds])
+
   const visiblePreorderRows = React.useMemo(
     () =>
-      visibleOrders.flatMap((order) =>
+      exportOrders.flatMap((order) =>
         order.order_items
           .filter((item) => item.category === "preorder")
           .map((item) => ({ order, item }))
       ),
-    [visibleOrders]
+    [exportOrders]
   )
+
+  const visibleIds = React.useMemo(() => visibleOrders.map((o) => o.id), [visibleOrders])
+  const visibleSelectedCount = React.useMemo(
+    () => visibleIds.filter((id) => selectedIds.has(id)).length,
+    [visibleIds, selectedIds]
+  )
+  const allVisibleSelected = visibleIds.length > 0 && visibleSelectedCount === visibleIds.length
+  const someVisibleSelected = visibleSelectedCount > 0 && !allVisibleSelected
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id))
+      } else {
+        visibleIds.forEach((id) => next.add(id))
+      }
+      return next
+    })
+  }
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const clearSelection = () => setSelectedIds(new Set())
 
   const handleExportPdf = () => {
     if (visiblePreorderRows.length === 0) {
@@ -210,7 +248,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
         <body>
           <div class="header">
             <h1>Pedido Previo - Exportación PDF</h1>
-            <div class="meta">Rango: ${escapeHtml(rangeLabel)} | Exportado: ${escapeHtml(exportedAt)} | Pedidos visibles: ${visibleOrders.length}</div>
+            <div class="meta">Rango: ${escapeHtml(rangeLabel)} | Exportado: ${escapeHtml(exportedAt)} | Pedidos exportados: ${exportOrders.length}${selectedIds.size > 0 ? " (seleccionados)" : ""}</div>
           </div>
           <table>
             <thead>
@@ -246,6 +284,14 @@ export function OrdersClient({ orders, patchMap }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allVisibleSelected ? true : someVisibleSelected ? "indeterminate" : false}
+                  onCheckedChange={toggleSelectAllVisible}
+                  disabled={orderList.length === 0}
+                  aria-label="Seleccionar todos los visibles"
+                />
+              </TableHead>
               <TableHead className="whitespace-nowrap">Fecha</TableHead>
               <TableHead className="whitespace-nowrap">Cliente</TableHead>
               <TableHead className="whitespace-nowrap">Email</TableHead>
@@ -258,7 +304,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
             {orderList.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-8 text-center text-muted-foreground"
                 >
                   No hay pedidos en esta lista
@@ -271,14 +317,22 @@ export function OrdersClient({ orders, patchMap }: Props) {
                 const isReverted = !order.inventory_processed
                 
                 return (
-                  <TableRow 
+                  <TableRow
                     key={order.id}
+                    data-state={selectedIds.has(order.id) ? "selected" : undefined}
                     className={cn(
                       isTaken && "bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/40",
                       isDelivered && "bg-green-100 hover:bg-green-200 dark:bg-green-900/40 dark:hover:bg-green-900/50",
                       isReverted && "bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/50"
                     )}
                   >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(order.id)}
+                        onCheckedChange={() => toggleSelectOne(order.id)}
+                        aria-label={`Seleccionar pedido ${order.id}`}
+                      />
+                    </TableCell>
                     <TableCell className="text-muted-foreground whitespace-nowrap">
                       {new Date(order.created_at).toLocaleDateString("es-MX", {
                         day: "2-digit",
@@ -357,13 +411,24 @@ export function OrdersClient({ orders, patchMap }: Props) {
               className="w-[170px]"
             />
           </div>
+          {selectedIds.size > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={clearSelection}
+            >
+              Limpiar seleccion ({selectedIds.size})
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
             onClick={handleExportPdf}
             disabled={visiblePreorderRows.length === 0}
           >
-            Exportar Pedido Previo PDF
+            {selectedIds.size > 0
+              ? `Exportar PDF (${selectedIds.size} seleccionados)`
+              : "Exportar Pedido Previo PDF"}
           </Button>
         </div>
 
