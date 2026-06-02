@@ -197,6 +197,12 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .store-hero-bg {
+    background-image: url("/hero-background-mobile.jpg");
+  }
+}
+
 @media (max-width: 768px) {
   .world-cup-screen-wash {
     opacity: 0.46;
