@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import Link from "next/link"
-import { Truck } from "lucide-react"
+import { Truck, Search } from "lucide-react"
 import type { OrderWithItems } from "@/lib/types"
 import { formatCurrency, cn } from "@/lib/utils"
 
@@ -29,6 +29,7 @@ const TO_KEY = "despacho:toDate"
 export function DespachoClient({ orders }: Props) {
   const [fromDate, setFromDate] = React.useState("")
   const [toDate, setToDate] = React.useState("")
+  const [search, setSearch] = React.useState("")
   const [hydrated, setHydrated] = React.useState(false)
 
   // Restore the filter on mount.
@@ -61,11 +62,27 @@ export function DespachoClient({ orders }: Props) {
     [fromDate, toDate]
   )
 
-  const filteredOrders = orders.filter((order) => isDateInRange(order.created_at))
+  const matchesSearch = React.useCallback(
+    (order: OrderWithItems) => {
+      const q = search.trim().toLowerCase()
+      if (!q) return true
+      return (
+        order.customer_name.toLowerCase().includes(q) ||
+        order.customer_email.toLowerCase().includes(q) ||
+        (order.customer_phone ?? "").toLowerCase().includes(q)
+      )
+    },
+    [search]
+  )
+
+  const filteredOrders = orders.filter(
+    (order) => isDateInRange(order.created_at) && matchesSearch(order)
+  )
 
   const clearFilter = () => {
     setFromDate("")
     setToDate("")
+    setSearch("")
   }
 
   return (
@@ -79,6 +96,20 @@ export function DespachoClient({ orders }: Props) {
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <Label htmlFor="search">Buscar</Label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="search"
+                type="text"
+                placeholder="Cliente, email o telefono"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-[240px] pl-9"
+              />
+            </div>
+          </div>
           <div>
             <Label htmlFor="from-date">Del</Label>
             <Input
@@ -99,9 +130,9 @@ export function DespachoClient({ orders }: Props) {
               className="w-[170px]"
             />
           </div>
-          {(fromDate || toDate) && (
+          {(fromDate || toDate || search) && (
             <Button type="button" variant="ghost" onClick={clearFilter}>
-              Limpiar fechas
+              Limpiar filtros
             </Button>
           )}
         </div>
