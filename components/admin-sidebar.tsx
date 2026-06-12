@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Package, ShoppingBag, LayoutDashboard, LogOut, Box, Sparkles } from "lucide-react"
+import { Package, ShoppingBag, LayoutDashboard, LogOut, Box, Sparkles, Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const LINKS = [
@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/parches", label: "Parches", icon: Sparkles },
   { href: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
+  { href: "/admin/despacho", label: "Despacho", icon: Truck },
   { href: "/admin/inventario", label: "Inventario", icon: Box },
 
 

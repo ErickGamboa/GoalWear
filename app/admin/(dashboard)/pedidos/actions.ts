@@ -26,6 +26,7 @@ export async function takeOrder(orderId: string) {
     }
 
     revalidatePath("/admin/pedidos")
+    revalidatePath("/admin/despacho")
     revalidatePath("/admin")
     return { success: true }
   } catch (err) {
@@ -56,6 +57,7 @@ export async function deliverOrder(orderId: string) {
     }
 
     revalidatePath("/admin/pedidos")
+    revalidatePath("/admin/despacho")
     revalidatePath("/admin")
     return { success: true }
   } catch (err) {
