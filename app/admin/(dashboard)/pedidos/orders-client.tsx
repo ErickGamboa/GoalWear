@@ -14,11 +14,24 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { Loader2, Hand, RotateCcw } from "lucide-react"
 import type { OrderWithItems } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
-import { InventoryButton } from "./inventory-button"
-import { TakeOrderButton } from "./take-order-button"
+import { takeOrders, declineOrders } from "./actions"
 
 import { cn } from "@/lib/utils"
 
@@ -70,10 +83,12 @@ function formatSize(productName: string, size: string | null) {
 }
 
 export function OrdersClient({ orders, patchMap }: Props) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = React.useState<"pending" | "history">("pending")
   const [fromDate, setFromDate] = React.useState("")
   const [toDate, setToDate] = React.useState("")
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [bulkLoading, setBulkLoading] = React.useState<null | "take" | "decline">(null)
 
   const isDateInRange = React.useCallback(
     (createdAt: string) => {
@@ -149,6 +164,129 @@ export function OrdersClient({ orders, patchMap }: Props) {
   }
 
   const clearSelection = () => setSelectedIds(new Set())
+
+  // Bulk take/decline only act on selected orders that are currently pending.
+  const selectedPendingIds = React.useMemo(
+    () => filteredPendingOrders.filter((o) => selectedIds.has(o.id)).map((o) => o.id),
+    [filteredPendingOrders, selectedIds]
+  )
+
+  // If there is a selection, a row action applies to all selected pending orders;
+  // otherwise it applies only to the row that was clicked.
+  const targetsFor = (orderId: string) =>
+    selectedPendingIds.length > 0 ? selectedPendingIds : [orderId]
+
+  const runTake = async (ids: string[]) => {
+    setBulkLoading("take")
+    try {
+      const result = await takeOrders(ids)
+      if (!result.success) throw new Error(result.message)
+      toast.success(`${result.count} pedido(s) tomado(s)`)
+      clearSelection()
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al tomar pedidos")
+    } finally {
+      setBulkLoading(null)
+    }
+  }
+
+  const runDecline = async (ids: string[]) => {
+    setBulkLoading("decline")
+    try {
+      const result = await declineOrders(ids)
+      if (!result.success) throw new Error(result.message)
+      toast.success(`${result.count} pedido(s) declinado(s)`)
+      clearSelection()
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al declinar pedidos")
+    } finally {
+      setBulkLoading(null)
+    }
+  }
+
+  const renderPendingActions = (order: OrderWithItems) => {
+    const targets = targetsFor(order.id)
+    const isBulk = selectedPendingIds.length > 0
+    const noun = isBulk ? `${targets.length} pedido(s)` : "el pedido"
+
+    return (
+      <>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+              title={isBulk ? `Tomar ${targets.length} seleccionados` : "Tomar pedido"}
+              disabled={bulkLoading !== null}
+            >
+              {bulkLoading === "take" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Hand className="h-4 w-4" />
+              )}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Tomar {noun}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {isBulk
+                  ? "Los pedidos seleccionados se moverán a Despacho en amarillo, listos para entregar."
+                  : "El pedido se moverá a Despacho en amarillo, listo para entregar."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => runTake(targets)}
+                className="bg-yellow-600 hover:bg-yellow-700"
+              >
+                Confirmar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+              title={isBulk ? `Declinar ${targets.length} seleccionados` : "Declinar pedido"}
+              disabled={bulkLoading !== null}
+            >
+              {bulkLoading === "decline" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RotateCcw className="h-4 w-4" />
+              )}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Declinar {noun}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Se devolverá el stock de entrega inmediata y {isBulk ? "los pedidos pasarán" : "el pedido pasará"} al historial en rojo.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => runDecline(targets)}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                Confirmar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    )
+  }
 
   const handleExportPdf = () => {
     if (visiblePreorderRows.length === 0) {
@@ -352,12 +490,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {!isHistory && (
-                          <>
-                            <TakeOrderButton order={order} />
-                            <InventoryButton order={order} />
-                          </>
-                        )}
+                        {!isHistory && renderPendingActions(order)}
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/admin/pedidos/${order.id}`}>Ver</Link>
                         </Button>
