@@ -43,7 +43,8 @@ async function getFeaturedProducts(
       if (query && !mujeres) {
         dbQuery = dbQuery.or(`name.ilike.%${query}%,team.ilike.%${query}%,code.ilike.%${query}%`)
       } else if (!isFiltered) {
-        dbQuery = dbQuery.limit(4)
+        // immediate is filtered by stock below, so fetch extra candidates to still fill 4 cards
+        dbQuery = dbQuery.limit(category === "immediate" ? 12 : 4)
       }
 
       const { data } = await dbQuery
