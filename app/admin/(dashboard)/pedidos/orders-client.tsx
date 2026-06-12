@@ -19,7 +19,6 @@ import type { OrderWithItems } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { InventoryButton } from "./inventory-button"
 import { TakeOrderButton } from "./take-order-button"
-import { DeliverOrderButton } from "./deliver-order-button"
 
 import { cn } from "@/lib/utils"
 
@@ -95,9 +94,8 @@ export function OrdersClient({ orders, patchMap }: Props) {
   // Pending: Active orders (stock processed AND status = pending)
   const pendingOrders = orders.filter((o) => o.status === "pending" && o.inventory_processed)
   
-  // History: Taken, Delivered, or Reverted orders
+  // History: Delivered (green) or Reverted (red). Taken/yellow orders live in Despacho.
   const historyOrders = orders.filter((o) =>
-    o.status === "taken" ||
     o.status === "delivered" ||
     !o.inventory_processed
   )
@@ -359,9 +357,6 @@ export function OrdersClient({ orders, patchMap }: Props) {
                             <TakeOrderButton order={order} />
                             <InventoryButton order={order} />
                           </>
-                        )}
-                        {isHistory && isTaken && (
-                          <DeliverOrderButton order={order} />
                         )}
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/admin/pedidos/${order.id}`}>Ver</Link>
