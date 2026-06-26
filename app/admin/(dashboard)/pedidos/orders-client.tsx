@@ -28,7 +28,7 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Loader2, Hand, RotateCcw } from "lucide-react"
+import { Loader2, Hand, RotateCcw, Search } from "lucide-react"
 import type { OrderWithItems } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { takeOrders, declineOrders } from "./actions"
@@ -87,6 +87,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
   const [activeTab, setActiveTab] = React.useState<"pending" | "history">("pending")
   const [fromDate, setFromDate] = React.useState("")
   const [toDate, setToDate] = React.useState("")
+  const [search, setSearch] = React.useState("")
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = React.useState<null | "take" | "decline">(null)
 
@@ -106,17 +107,34 @@ export function OrdersClient({ orders, patchMap }: Props) {
     [fromDate, toDate]
   )
 
+  const matchesSearch = React.useCallback(
+    (order: OrderWithItems) => {
+      const q = search.trim().toLowerCase()
+      if (!q) return true
+      return (
+        order.customer_name.toLowerCase().includes(q) ||
+        order.customer_email.toLowerCase().includes(q) ||
+        (order.customer_phone ?? "").toLowerCase().includes(q)
+      )
+    },
+    [search]
+  )
+
   // Pending: Active orders (stock processed AND status = pending)
   const pendingOrders = orders.filter((o) => o.status === "pending" && o.inventory_processed)
-  
+
   // History: Delivered (green) or Reverted (red). Taken/yellow orders live in Despacho.
   const historyOrders = orders.filter((o) =>
     o.status === "delivered" ||
     !o.inventory_processed
   )
 
-  const filteredPendingOrders = pendingOrders.filter((order) => isDateInRange(order.created_at))
-  const filteredHistoryOrders = historyOrders.filter((order) => isDateInRange(order.created_at))
+  const filteredPendingOrders = pendingOrders.filter(
+    (order) => isDateInRange(order.created_at) && matchesSearch(order)
+  )
+  const filteredHistoryOrders = historyOrders.filter(
+    (order) => isDateInRange(order.created_at) && matchesSearch(order)
+  )
   const visibleOrders = activeTab === "pending" ? filteredPendingOrders : filteredHistoryOrders
 
   const exportOrders = React.useMemo(() => {
@@ -520,6 +538,20 @@ export function OrdersClient({ orders, patchMap }: Props) {
 
         <div className="flex flex-wrap items-end gap-3">
           <div>
+            <Label htmlFor="search">Buscar</Label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="search"
+                type="text"
+                placeholder="Cliente, email o telefono"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-[240px] pl-9"
+              />
+            </div>
+          </div>
+          <div>
             <Label htmlFor="from-date">Del</Label>
             <Input
               id="from-date"
@@ -539,6 +571,19 @@ export function OrdersClient({ orders, patchMap }: Props) {
               className="w-[170px]"
             />
           </div>
+          {(fromDate || toDate || search) && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setFromDate("")
+                setToDate("")
+                setSearch("")
+              }}
+            >
+              Limpiar filtros
+            </Button>
+          )}
           {selectedIds.size > 0 && (
             <Button
               type="button"
