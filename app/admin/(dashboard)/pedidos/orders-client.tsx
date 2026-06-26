@@ -359,6 +359,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
                 <div><span>Cantidad:</span> <strong>${item.quantity}</strong></div>
               </div>
             </td>
+            <td><div class="client-name">${escapeHtml(order.customer_name)}</div></td>
           </tr>
         `
       })
@@ -381,6 +382,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
             table { width: 100%; border-collapse: collapse; font-size: 12px; }
             th, td { border: 1px solid #d1d5db; padding: 10px; vertical-align: top; }
             th { background: #f3f4f6; text-align: left; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+            .client-name { font-size: 16px; font-weight: 800; }
             .product-name { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
             .product-code { font-family: monospace; color: #6b7280; margin-bottom: 4px; }
             .order-meta { color: #6b7280; font-size: 11px; }
@@ -407,15 +409,16 @@ export function OrdersClient({ orders, patchMap }: Props) {
           <table>
             <thead>
               <tr>
-                <th>Producto</th>
+                <th>Product</th>
                 <th>IMAGE OF T-SHIRT</th>
                 <th>Patch</th>
                 <th>Name</th>
                 <th>Characteristics</th>
+                <th>Client</th>
               </tr>
             </thead>
             <tbody>
-              ${rowsHtml || `<tr><td colspan="5" class="muted">No hay filas para exportar.</td></tr>`}
+              ${rowsHtml || `<tr><td colspan="6" class="muted">No hay filas para exportar.</td></tr>`}
             </tbody>
           </table>
         </body>
