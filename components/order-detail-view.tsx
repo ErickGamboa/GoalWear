@@ -285,6 +285,7 @@ export function OrderDetailView({ order, patchesData, patchMap, readOnly = false
                           <td className="p-4 text-right print:hidden">
                             <ItemEditor
                               orderItemId={item.id}
+                              productId={item.product_id}
                               productName={item.product_name}
                               initialCustomName={item.custom_name}
                               initialCustomNumber={item.custom_number}

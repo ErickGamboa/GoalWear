@@ -12,13 +12,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Pencil, Loader2 } from "lucide-react"
+import { Pencil, Loader2, Search, Check } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { updateOrderItemDetails } from "./item-actions"
+import { cn } from "@/lib/utils"
+import { updateOrderItemDetails, listProductsForPicker } from "./item-actions"
+
+type PickerProduct = {
+  id: string
+  code: string
+  name: string
+  price: number
+  category: string
+}
+
+// Color-coded category tags so the admin can tell immediate vs preorder apart at a glance.
+const CATEGORY_TAG: Record<string, { label: string; className: string }> = {
+  immediate: { label: "Entrega Inmediata", className: "bg-green-100 text-green-800" },
+  preorder: { label: "Pedido Previo", className: "bg-blue-100 text-blue-800" },
+  accessory: { label: "Accesorios", className: "bg-purple-100 text-purple-800" },
+}
 
 type Props = {
   orderItemId: string
+  productId: string
   productName: string
   initialCustomName: string | null
   initialCustomNumber: string | null
@@ -29,6 +46,7 @@ type Props = {
 
 export function ItemEditor({
   orderItemId,
+  productId,
   productName,
   initialCustomName,
   initialCustomNumber,
@@ -44,14 +62,53 @@ export function ItemEditor({
   const [size, setSize] = React.useState(initialSize ?? "")
   const [quantity, setQuantity] = React.useState(String(initialQuantity ?? 1))
 
+  // Product picker state
+  const [selectedProductId, setSelectedProductId] = React.useState(productId)
+  const [selectedProductName, setSelectedProductName] = React.useState(productName)
+  const [changingProduct, setChangingProduct] = React.useState(false)
+  const [products, setProducts] = React.useState<PickerProduct[]>([])
+  const [productsLoading, setProductsLoading] = React.useState(false)
+  const [productSearch, setProductSearch] = React.useState("")
+
   React.useEffect(() => {
     if (open) {
       setCustomName(initialCustomName ?? "")
       setCustomNumber(initialCustomNumber ?? "")
       setSize(initialSize ?? "")
       setQuantity(String(initialQuantity ?? 1))
+      setSelectedProductId(productId)
+      setSelectedProductName(productName)
+      setChangingProduct(false)
+      setProductSearch("")
     }
-  }, [open, initialCustomName, initialCustomNumber, initialSize, initialQuantity])
+  }, [open, initialCustomName, initialCustomNumber, initialSize, initialQuantity, productId, productName])
+
+  // Lazy-load the product list the first time the picker is opened.
+  React.useEffect(() => {
+    if (!changingProduct || products.length > 0 || productsLoading) return
+    setProductsLoading(true)
+    listProductsForPicker()
+      .then((result) => {
+        if (result.error) {
+          toast.error(result.error)
+          return
+        }
+        setProducts(result.products as PickerProduct[])
+      })
+      .catch(() => toast.error("Error al cargar productos"))
+      .finally(() => setProductsLoading(false))
+  }, [changingProduct, products.length, productsLoading])
+
+  const filteredProducts = React.useMemo(() => {
+    const q = productSearch.trim().toLowerCase()
+    if (!q) return products
+    return products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q)
+    )
+  }, [products, productSearch])
+
+  const productChanged = selectedProductId !== productId
 
   async function handleSave() {
     const qty = Math.max(1, Math.floor(Number(quantity) || 1))
@@ -62,6 +119,7 @@ export function ItemEditor({
         customNumber: customNumber || null,
         size: size || null,
         quantity: qty,
+        productId: productChanged ? selectedProductId : null,
       })
       if (result.error) {
         toast.error(result.error)
@@ -85,12 +143,105 @@ export function ItemEditor({
           {triggerLabel}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Editar {productName}</DialogTitle>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="min-w-0">
+          <DialogTitle className="truncate">Editar {productName}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
+          <div className="space-y-1.5 min-w-0">
+            <Label>Producto</Label>
+            <div className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-foreground">
+                  {selectedProductName}
+                </p>
+                {productChanged && (
+                  <p className="text-xs text-amber-600">Producto cambiado (sin guardar)</p>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setChangingProduct((v) => !v)}
+              >
+                {changingProduct ? "Cerrar" : "Cambiar"}
+              </Button>
+            </div>
+
+            {changingProduct && (
+              <div className="min-w-0 rounded-md border border-border p-2">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    autoFocus
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    placeholder="Buscar por nombre o identificador"
+                    className="pl-8"
+                  />
+                </div>
+                <div className="mt-2 max-h-56 overflow-y-auto">
+                  {productsLoading ? (
+                    <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Cargando productos...
+                    </div>
+                  ) : filteredProducts.length === 0 ? (
+                    <p className="py-6 text-center text-sm text-muted-foreground">
+                      No se encontraron productos
+                    </p>
+                  ) : (
+                    <ul className="divide-y divide-border">
+                      {filteredProducts.map((p) => {
+                        const isSelected = p.id === selectedProductId
+                        return (
+                          <li key={p.id}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedProductId(p.id)
+                                setSelectedProductName(p.name)
+                                setChangingProduct(false)
+                              }}
+                              className={cn(
+                                "flex w-full items-center justify-between gap-2 px-2 py-2 text-left text-sm hover:bg-muted/60",
+                                isSelected && "bg-muted"
+                              )}
+                            >
+                              <span className="min-w-0">
+                                <span className="block truncate font-medium text-foreground">
+                                  {p.name}
+                                </span>
+                                <span className="mt-0.5 flex items-center gap-2">
+                                  <span className="truncate font-mono text-xs text-muted-foreground">
+                                    {p.code}
+                                  </span>
+                                  {CATEGORY_TAG[p.category] && (
+                                    <span
+                                      className={cn(
+                                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                                        CATEGORY_TAG[p.category].className
+                                      )}
+                                    >
+                                      {CATEGORY_TAG[p.category].label}
+                                    </span>
+                                  )}
+                                </span>
+                              </span>
+                              {isSelected && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor={`name-${orderItemId}`}>Name</Label>
             <Input
