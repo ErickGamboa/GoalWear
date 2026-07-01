@@ -21,19 +21,30 @@ async function getFeaturedProducts(
   const categories = ["immediate", "preorder", "accessory"]
   const results = await Promise.all(
     categories.map(async (category) => {
+      // immediate cards must have stock: use an inner join on product_sizes so the
+      // DB itself drops out-of-stock products. Otherwise limit() truncates BEFORE the
+      // stock filter runs and in-stock products ranked lower never make it into a card.
+      const sizesJoin =
+        category === "immediate" ? "product_sizes!inner (size, stock)" : "product_sizes (size, stock)"
+
       let dbQuery = supabase
         .from("products")
         .select(
           `id, name, price, image_url, image_url_2, image_url_3, team, code, sport, category, has_stock, is_bestseller,
-          product_sizes (size, stock)`
+          ${sizesJoin}`
         )
         .eq("category", category)
         .order("sort_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false })
 
-      // default: show only soccer for jersey categories; skip in mujeres mode (all sports)
+      if (category === "immediate") {
+        dbQuery = dbQuery.gt("product_sizes.stock", 0)
+      }
+
+      // default: show only soccer for jersey categories; skip in mujeres mode (all sports).
+      // Match the catalog: treat NULL sport as soccer too.
       if (!mujeres && !masVendidos && (category === "immediate" || category === "preorder")) {
-        dbQuery = dbQuery.eq("sport", "soccer")
+        dbQuery = dbQuery.or("sport.eq.soccer,sport.is.null")
       }
 
       if (masVendidos) {
@@ -43,8 +54,8 @@ async function getFeaturedProducts(
       if (query && !mujeres) {
         dbQuery = dbQuery.or(`name.ilike.%${query}%,team.ilike.%${query}%,code.ilike.%${query}%`)
       } else if (!isFiltered) {
-        // immediate is filtered by stock below, so fetch extra candidates to still fill 4 cards
-        dbQuery = dbQuery.limit(category === "immediate" ? 12 : 4)
+        // stock is now filtered in the DB, so limit(4) accurately fills the cards
+        dbQuery = dbQuery.limit(4)
       }
 
       const { data } = await dbQuery
