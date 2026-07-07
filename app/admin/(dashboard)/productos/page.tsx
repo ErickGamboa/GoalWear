@@ -15,6 +15,7 @@ export default async function ProductsPage() {
       .from("products")
       .select("*")
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .range(from, from + PAGE - 1)
 
     if (!data?.length) break

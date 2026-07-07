@@ -19,16 +19,32 @@ type ItemDetailsInput = {
 export async function listProductsForPicker() {
   const supabase = await createClient()
 
-  const { data, error } = await supabase
-    .from("products")
-    .select("id, code, name, price, category")
-    .order("name", { ascending: true })
+  // Paginate to get around the PostgREST 1000-row cap; a unique tiebreaker on
+  // `id` keeps the ordering deterministic so no row is skipped at a page boundary.
+  const PAGE = 1000
+  type PickerProduct = { id: string; code: string; name: string; price: number; category: string }
+  const products: PickerProduct[] = []
+  let from = 0
 
-  if (error) {
-    return { error: `Error de base de datos: ${error.message}`, products: [] }
+  while (true) {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, code, name, price, category")
+      .order("name", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, from + PAGE - 1)
+
+    if (error) {
+      return { error: `Error de base de datos: ${error.message}`, products: [] }
+    }
+
+    if (!data?.length) break
+    products.push(...(data as PickerProduct[]))
+    if (data.length < PAGE) break
+    from += PAGE
   }
 
-  return { products: data ?? [] }
+  return { products }
 }
 
 export async function updateOrderItemDetails(

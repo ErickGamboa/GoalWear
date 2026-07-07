@@ -24,6 +24,7 @@ async function fetchAllProducts(supabase: Awaited<ReturnType<typeof createClient
       .select("id, name, team, code, category, sort_order")
       .order("sort_order", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .range(from, from + PAGE - 1)
 
     if (error) {
@@ -49,6 +50,7 @@ async function fetchAllProductsFallback(supabase: Awaited<ReturnType<typeof crea
       .from("products")
       .select("id, name, team, code, category")
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .range(from, from + PAGE - 1)
 
     if (!data?.length) break
