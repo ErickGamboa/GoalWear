@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/lib/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import type { ProductWithSizes, Patch } from "@/lib/types"
+import { isAccessoryCategory } from "@/lib/types"
 import { ShoppingCart, Loader2, Lightbulb } from "lucide-react"
 import { toast } from "sonner"
 import { formatCurrency, cn } from "@/lib/utils"
@@ -47,7 +48,7 @@ export function ProductDetailClient({
   ].filter(Boolean) as string[]
 
   const isPreorder = product.category === "preorder"
-  const isAccessory = product.category === "accessory"
+  const isAccessory = isAccessoryCategory(product.category)
   const isPlayerType = product.name.toLowerCase().includes("player")
   const isKids = product.name.toLowerCase().includes("niñ")
   const isBallSport = ["basketball", "football", "baseball"].includes(product.sport)

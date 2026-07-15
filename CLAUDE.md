@@ -27,7 +27,7 @@ GoalWear is a Next.js 14 App Router e-commerce site for sports jerseys, backed b
 
 ### Domain model
 
-- **Products** have three categories: `immediate` (Entrega Inmediata), `preorder` (Pedido Previo), `accessory` (Accesorios).
+- **Products** have six categories: two jersey categories — `immediate` (Entrega Inmediata), `preorder` (Pedido Previo) — and four non-jersey categories — `jackets` (Jackets), `caps` (Gorras), `sportswear` (Ropa Deportiva), `accessory` (Artículos Deportivos). The four non-jersey categories share the same storefront behavior (free-text size, no customization, no patches); `isAccessoryCategory()` in `lib/types.ts` identifies them.
 - **Order status flow**: `pending` → `taken` → `delivered`. Orders only appear in the admin "Pendientes" tab when `inventory_processed = true AND status = 'pending'`. Orders with `inventory_processed = false` show as reverted (red) in the history tab.
 - **Patches** are add-ons stored in the `patches` table; they are referenced in `order_items.patches` as a text array of patch names.
 - All domain types and constants (sport slugs, category slugs, size lists) live in `lib/types.ts`. Use those constants — don't hardcode strings.

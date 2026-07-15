@@ -10,8 +10,8 @@ export type Product = {
   image_url: string | null
   image_url_2: string | null
   image_url_3: string | null
-  category: "immediate" | "preorder" | "accessory"
-  sport: SportType
+  category: "immediate" | "preorder" | "jackets" | "caps" | "sportswear" | "accessory"
+  sport: SportType | null
   soccer_type: SoccerType | null
   has_stock: boolean
   is_bestseller?: boolean
@@ -117,17 +117,60 @@ export type OrderWithItems = Order & {
 export const CATEGORY_LABELS: Record<string, string> = {
   immediate: "Entrega Inmediata",
   preorder: "Pedido Previo",
-  accessory: "Accesorios",
+  jackets: "Jackets",
+  caps: "Gorras",
+  sportswear: "Ropa Deportiva",
+  accessory: "Artículos Deportivos",
 }
 
 export const CATEGORY_SLUGS: Record<string, string> = {
   immediate: "entrega-inmediata",
   preorder: "pedido-previo",
+  jackets: "jackets",
+  caps: "gorras",
+  sportswear: "ropa-deportiva",
   accessory: "accesorios",
 }
 
 export const SLUG_TO_CATEGORY: Record<string, string> = {
   "entrega-inmediata": "immediate",
   "pedido-previo": "preorder",
+  jackets: "jackets",
+  gorras: "caps",
+  "ropa-deportiva": "sportswear",
   accesorios: "accessory",
 }
+
+// Non-jersey categories. They share the original "accessory" storefront behavior:
+// free-text size, no name/number customization, no patches.
+export const ACCESSORY_CATEGORIES = ["jackets", "caps", "sportswear", "accessory"] as const
+
+export function isAccessoryCategory(category: string): boolean {
+  return (ACCESSORY_CATEGORIES as readonly string[]).includes(category)
+}
+
+// Categories where sport / tipo de fútbol don't apply. Jackets are team-based, so
+// they keep the sport selector; caps, sportswear and accessories don't.
+export const SPORTLESS_CATEGORIES = ["caps", "sportswear", "accessory"] as const
+
+export function categoryRequiresSport(category: string): boolean {
+  return !(SPORTLESS_CATEGORIES as readonly string[]).includes(category)
+}
+
+// Ordered category options for the admin product form select.
+export const PRODUCT_CATEGORY_OPTIONS: { value: string; label: string }[] = [
+  { value: "immediate", label: "Entrega Inmediata" },
+  { value: "preorder", label: "Pedido Previo" },
+  { value: "jackets", label: "Jackets" },
+  { value: "caps", label: "Gorras" },
+  { value: "sportswear", label: "Ropa Deportiva" },
+  { value: "accessory", label: "Artículos Deportivos" },
+]
+
+// Section metadata for the non-jersey categories rendered on the homepage.
+export const ACCESSORY_SECTIONS: { category: string; title: string; description: string }[] = [
+  { category: "jackets", title: "Jackets", description: "Chaquetas y abrigos deportivos para todo clima." },
+  { category: "caps", title: "Gorras", description: "Gorras para completar tu look." },
+  { category: "sportswear", title: "Ropa Deportiva", description: "Ropa de entrenamiento y estilo para el día a día." },
+  { category: "accessory", title: "Artículos Deportivos", description: "Espinilleras, medias, guantes, botellas y más." },
+]

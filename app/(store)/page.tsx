@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
+import { ACCESSORY_SECTIONS, CATEGORY_SLUGS } from "@/lib/types"
 
 export const revalidate = 60
+
+const ACCESSORY_CATEGORY_KEYS = ACCESSORY_SECTIONS.map((s) => s.category)
 
 async function getFeaturedProducts(
   query?: string,
@@ -18,7 +21,7 @@ async function getFeaturedProducts(
   const supabase = await createClient()
   const isFiltered = worldCup || mujeres || masVendidos
 
-  const categories = ["immediate", "preorder", "accessory"]
+  const categories = ["immediate", "preorder", ...ACCESSORY_CATEGORY_KEYS]
   const results = await Promise.all(
     categories.map(async (category) => {
       // immediate cards must have stock: use an inner join on product_sizes so the
@@ -92,10 +95,15 @@ async function getFeaturedProducts(
     })
   )
 
+  const accessories: Record<string, any[]> = {}
+  ACCESSORY_CATEGORY_KEYS.forEach((cat, i) => {
+    accessories[cat] = results[2 + i]
+  })
+
   return {
     immediate: results[0],
     preorder: results[1],
-    accessories: results[2],
+    accessories,
   }
 }
 
@@ -136,10 +144,6 @@ export default async function HomePage({
     : isMasVendidos
     ? "/catalogo/pedido-previo?masVendidos=1"
     : "/catalogo/pedido-previo"
-
-  const accessoriesHref = isSearching
-    ? `/catalogo/accesorios?q=${encodeURIComponent(query!)}`
-    : "/catalogo/accesorios"
 
   const isFiltered = isWorldCup || isMujeres || isMasVendidos
 
@@ -195,16 +199,24 @@ export default async function HomePage({
           isFiltered={isFiltered}
         />
 
-        {!isMasVendidos && (
-          <CategorySection
-            title="Artículos Deportivos"
-            description="Espinilleras, medias, guantes, botellas y más"
-            href={accessoriesHref}
-            products={accessories}
-            isSearching={isSearching}
-            isFiltered={isWorldCup || isMujeres}
-          />
-        )}
+        {!isMasVendidos &&
+          ACCESSORY_SECTIONS.map((section) => {
+            const slug = CATEGORY_SLUGS[section.category]
+            const href = isSearching
+              ? `/catalogo/${slug}?q=${encodeURIComponent(query!)}`
+              : `/catalogo/${slug}`
+            return (
+              <CategorySection
+                key={section.category}
+                title={section.title}
+                description={section.description}
+                href={href}
+                products={accessories[section.category] ?? []}
+                isSearching={isSearching}
+                isFiltered={isWorldCup || isMujeres}
+              />
+            )
+          })}
       </div>
     </>
   )

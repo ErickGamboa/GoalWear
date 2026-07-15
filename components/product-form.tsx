@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Plus, X } from "lucide-react"
 import { toast } from "sonner"
 import type { ProductWithSizes, SoccerType, SportType } from "@/lib/types"
-import { SPORT_OPTIONS } from "@/lib/types"
+import { SPORT_OPTIONS, PRODUCT_CATEGORY_OPTIONS, categoryRequiresSport } from "@/lib/types"
 import { compressImage } from "@/lib/compress-image"
 
 const ADULT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"]
@@ -68,6 +68,7 @@ export function ProductForm({ product, mode }: Props) {
 
   const isKids = name.toLowerCase().includes("niñ")
   const availableSizes = isKids ? KIDS_SIZES : ADULT_SIZES
+  const needsSport = categoryRequiresSport(category)
 
   const formatSize = (size: string) => {
     if (isKids && KIDS_SIZE_DISPLAY[size]) {
@@ -135,8 +136,8 @@ export function ProductForm({ product, mode }: Props) {
         team: team || null,
         price: parseFloat(price),
         category,
-        sport,
-        soccer_type: sport === "soccer" ? soccerType : null,
+        sport: needsSport ? sport : null,
+        soccer_type: needsSport && sport === "soccer" ? soccerType : null,
         has_stock: hasStock,
         image_url: finalImageUrl || null,
         image_url_2: finalImageUrl2 || null,
@@ -261,29 +262,33 @@ export function ProductForm({ product, mode }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="immediate">Entrega Inmediata</SelectItem>
-                  <SelectItem value="preorder">Pedido Previo</SelectItem>
-                  <SelectItem value="accessory">Accesorio</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Deporte *</Label>
-              <Select value={sport} onValueChange={(val) => setSport(val as SportType)}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SPORT_OPTIONS.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
+                  {PRODUCT_CATEGORY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+            {needsSport && (
+              <div>
+                <Label>Deporte *</Label>
+                <Select value={sport} onValueChange={(val) => setSport(val as SportType)}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SPORT_OPTIONS.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
-            {sport === "soccer" && (
+            {needsSport && sport === "soccer" && (
               <div>
                 <Label>Tipo de Futbol *</Label>
                 <Select value={soccerType} onValueChange={(val) => setSoccerType(val as SoccerType)}>

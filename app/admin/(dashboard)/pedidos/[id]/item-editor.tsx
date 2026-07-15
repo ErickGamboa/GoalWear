@@ -30,7 +30,10 @@ type PickerProduct = {
 const CATEGORY_TAG: Record<string, { label: string; className: string }> = {
   immediate: { label: "Entrega Inmediata", className: "bg-green-100 text-green-800" },
   preorder: { label: "Pedido Previo", className: "bg-blue-100 text-blue-800" },
-  accessory: { label: "Accesorios", className: "bg-purple-100 text-purple-800" },
+  jackets: { label: "Jackets", className: "bg-amber-100 text-amber-800" },
+  caps: { label: "Gorras", className: "bg-pink-100 text-pink-800" },
+  sportswear: { label: "Ropa Deportiva", className: "bg-teal-100 text-teal-800" },
+  accessory: { label: "Artículos Deportivos", className: "bg-purple-100 text-purple-800" },
 }
 
 type Props = {

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ACCESSORY_SECTIONS, CATEGORY_SLUGS } from "@/lib/types"
 
 export function StoreFooter() {
   return (
@@ -24,12 +25,15 @@ export function StoreFooter() {
             >
               Pedido Previo
             </Link>
-            <Link
-              href="/catalogo/accesorios"
-              className="text-sm text-muted-foreground transition-all duration-300 hover:text-foreground hover:underline underline-offset-4"
-            >
-              Accesorios
-            </Link>
+            {ACCESSORY_SECTIONS.map((s) => (
+              <Link
+                key={s.category}
+                href={`/catalogo/${CATEGORY_SLUGS[s.category]}`}
+                className="text-sm text-muted-foreground transition-all duration-300 hover:text-foreground hover:underline underline-offset-4"
+              >
+                {s.title}
+              </Link>
+            ))}
           </nav>
           <p className="text-xs text-muted-foreground">
             GOΛLWEΛR {new Date().getFullYear()}

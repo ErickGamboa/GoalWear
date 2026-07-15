@@ -9,12 +9,16 @@ import { useState, Suspense } from "react"
 import { cn } from "@/lib/utils"
 import { ProductSearch } from "./product-search"
 import { ThemeToggle } from "./theme-toggle"
+import { ACCESSORY_SECTIONS, CATEGORY_SLUGS } from "@/lib/types"
 
 const NAV_LINKS = [
   { href: "/", label: "Inicio" },
   { href: "/catalogo/entrega-inmediata", label: "Entrega Inmediata" },
   { href: "/catalogo/pedido-previo", label: "Pedido Previo" },
-  { href: "/catalogo/accesorios", label: "Accesorios" },
+  ...ACCESSORY_SECTIONS.map((s) => ({
+    href: `/catalogo/${CATEGORY_SLUGS[s.category]}`,
+    label: s.title,
+  })),
 ]
 
 export function StoreHeader() {
