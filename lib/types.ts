@@ -157,6 +157,13 @@ export function categoryRequiresSport(category: string): boolean {
   return !(SPORTLESS_CATEGORIES as readonly string[]).includes(category)
 }
 
+// Categories handled like "Pedido Previo" on the admin side: they render in the
+// detailed, per-item editable order table and are included in the PDF export.
+// Everything except "immediate" (ready-stock jerseys) belongs here.
+export function isPreorderLikeCategory(category: string): boolean {
+  return category === "preorder" || isAccessoryCategory(category)
+}
+
 // Ordered category options for the admin product form select.
 export const PRODUCT_CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: "immediate", label: "Entrega Inmediata" },

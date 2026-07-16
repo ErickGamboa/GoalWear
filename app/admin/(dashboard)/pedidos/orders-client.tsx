@@ -30,6 +30,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Loader2, Hand, RotateCcw, Search } from "lucide-react"
 import type { OrderWithItems } from "@/lib/types"
+import { CATEGORY_LABELS, isPreorderLikeCategory } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { takeOrders, declineOrders } from "./actions"
 
@@ -146,7 +147,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
     () =>
       exportOrders.flatMap((order) =>
         order.order_items
-          .filter((item) => item.category === "preorder")
+          .filter((item) => isPreorderLikeCategory(item.category))
           .map((item) => ({ order, item }))
       ),
     [exportOrders]
@@ -346,6 +347,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
             <td>
               <div class="product-name">${escapeHtml(item.product_name)}</div>
               <div class="product-code">${escapeHtml(item.product_code)}</div>
+              <div class="category-tag">${escapeHtml(CATEGORY_LABELS[item.category] || item.category)}</div>
               <div class="order-meta">Pedido: ${escapeHtml(order.id)} | ${new Date(order.created_at).toLocaleDateString("es-MX")}</div>
             </td>
             <td>${productImage}</td>
@@ -385,6 +387,7 @@ export function OrdersClient({ orders, patchMap }: Props) {
             .client-name { font-size: 16px; font-weight: 800; }
             .product-name { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
             .product-code { font-family: monospace; color: #6b7280; margin-bottom: 4px; }
+            .category-tag { display: inline-block; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 9999px; padding: 2px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
             .order-meta { color: #6b7280; font-size: 11px; }
             .product-image { width: 170px; height: 170px; object-fit: contain; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; }
             .placeholder { width: 170px; height: 170px; display: flex; align-items: center; justify-content: center; border: 1px dashed #d1d5db; border-radius: 8px; color: #6b7280; }

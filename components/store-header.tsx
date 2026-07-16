@@ -112,7 +112,7 @@ export function StoreHeader() {
         </div>
       </div>
 
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out lg:hidden ${menuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out lg:hidden ${menuOpen ? 'max-h-[540px] opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl px-4 py-2">
           {NAV_LINKS.map((link) => (
             <Link

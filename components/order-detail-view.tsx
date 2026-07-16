@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { CATEGORY_LABELS } from "@/lib/types"
+import { CATEGORY_LABELS, isPreorderLikeCategory } from "@/lib/types"
 import { formatCurrency, cn } from "@/lib/utils"
 import Image from "next/image"
 import { PatchSelector } from "@/app/admin/(dashboard)/pedidos/[id]/patch-selector"
@@ -38,8 +38,8 @@ type Props = {
  * Shared by the Pedidos and Despacho detail pages — each renders its own header/actions.
  */
 export function OrderDetailView({ order, patchesData, patchMap, readOnly = false }: Props) {
-  const preorderItems = order.order_items.filter((item: any) => item.category === "preorder")
-  const otherItems = order.order_items.filter((item: any) => item.category !== "preorder")
+  const preorderItems = order.order_items.filter((item: any) => isPreorderLikeCategory(item.category))
+  const otherItems = order.order_items.filter((item: any) => !isPreorderLikeCategory(item.category))
 
   return (
     <>
@@ -134,7 +134,7 @@ export function OrderDetailView({ order, patchesData, patchMap, readOnly = false
         <Card className="mt-6 border-primary/20">
           <CardHeader className="bg-primary/5">
             <CardTitle className="text-primary flex items-center gap-2 text-xl">
-              Camisetas - Pedido Previo
+              Pedido Previo
               <Badge>{preorderItems.length}</Badge>
             </CardTitle>
           </CardHeader>
@@ -161,6 +161,9 @@ export function OrderDetailView({ order, patchesData, patchMap, readOnly = false
                         <td className="p-4 min-w-[200px]">
                           <div className="font-bold text-base text-foreground">{item.product_name}</div>
                           <div className="text-sm text-muted-foreground font-mono">{item.product_code}</div>
+                          <Badge variant="secondary" className="mt-1 text-xs">
+                            {CATEGORY_LABELS[item.category] || item.category}
+                          </Badge>
                         </td>
                         <td className="p-4">
                           {item.products?.image_url ? (
